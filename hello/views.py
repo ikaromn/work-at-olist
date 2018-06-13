@@ -11,6 +11,8 @@ def index(request):
 def lerox(request):
 	return render(request, 'lerox.html')
 
+def lele(request):
+	return render(request, 'lele.html')
 
 def db(request):
 
