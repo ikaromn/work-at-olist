@@ -8,6 +8,9 @@ def index(request):
     # return HttpResponse('Hello from Python!')
     return render(request, 'index.html')
 
+def lerox(request):
+	return render(request, 'lerox.html')
+
 
 def db(request):
 
@@ -17,4 +20,3 @@ def db(request):
     greetings = Greeting.objects.all()
 
     return render(request, 'db.html', {'greetings': greetings})
-
