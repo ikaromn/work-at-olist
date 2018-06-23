@@ -4,16 +4,13 @@ from django.urls import path
 from django.contrib import admin
 admin.autodiscover()
 
-import hello.views
+from hello import views
 
 # Examples:
 # url(r'^$', 'gettingstarted.views.home', name='home'),
 # url(r'^blog/', include('blog.urls')),
 
 urlpatterns = [
-    url(r'^$', hello.views.index, name='index'),
-    url(r'^lerox/', hello.views.lerox, name='lerox'),
-    url(r'^lele/', hello.views.lele, name='lele'),
-    url(r'^db', hello.views.db, name='db'),
+    url(r'call-record/$', views.CallRecordCreate.as_view(), name='call-record-create'),
     path('admin/', admin.site.urls),
 ]

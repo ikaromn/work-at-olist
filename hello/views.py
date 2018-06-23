@@ -1,24 +1,9 @@
 from django.shortcuts import render
 from django.http import HttpResponse
+from rest_framework import generics
+from .models import CallRecord
+from .serializers import CallRecordSerializer
 
-from .models import Greeting
-
-# Create your views here.
-def index(request):
-    # return HttpResponse('Hello from Python!')
-    return render(request, 'index.html')
-
-def lerox(request):
-	return render(request, 'lerox.html')
-
-def lele(request):
-	return render(request, 'lele.html')
-
-def db(request):
-
-    greeting = Greeting()
-    greeting.save()
-
-    greetings = Greeting.objects.all()
-
-    return render(request, 'db.html', {'greetings': greetings})
+class CallRecordCreate(generics.CreateAPIView):
+    queryset = CallRecord.objects.all()
+    serializer_class = CallRecordSerializer
