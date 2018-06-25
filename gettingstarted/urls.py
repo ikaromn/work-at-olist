@@ -8,8 +8,8 @@ admin.autodiscover()
 urlpatterns = [
     url(r'call-record/$', views.CallRecordCreate.as_view(),
         name='call-record-create'),
-    url(r'bill/(?P<phone_number>[0-9]+)/(?:(?P<month>[0-9]+)/\
-        (?:(?P<year>[0-9]+))/)?$',
+    url(r'bill/(?P<phone_number>[0-9]+)/'\
+        '(?:(?P<month>[0-9]+)/(?:(?P<year>[0-9]+))/)?$',
         views.BillByMonth.as_view(), name='bill-by-month'),
     path('admin/', admin.site.urls),
 ]
