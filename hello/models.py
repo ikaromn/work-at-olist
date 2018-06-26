@@ -17,3 +17,13 @@ class CallRecord(models.Model):
         verbose_name = 'Call Record'
         verbose_name_plural = 'Call Records'
         unique_together = (('type', 'call_id'))
+
+
+class Bill(models.Model):
+    call_record = models.ForeignKey(CallRecord, related_name='bills', on_delete=models.CASCADE)
+    call_duration = models.TimeField()
+    call_cost = models.FloatField()
+
+    class Meta:
+        verbose_name = 'Bill'
+        verbose_name_plural = 'Bills'
