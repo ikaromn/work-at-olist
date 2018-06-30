@@ -1,13 +1,27 @@
 from rest_framework import generics, views
 from rest_framework.response import Response
+from rest_framework.renderers import JSONRenderer
 from .models import CallRecord
 from .serializers import CallRecordSerializer
 from datetime import datetime
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class CallRecordCreate(generics.CreateAPIView):
     queryset = CallRecord.objects.all()
     serializer_class = CallRecordSerializer
+
+    def create(self, request, *args, **kwargs):
+        logger.debug(
+            'Call Record was created', extra={
+                'Source Number': kwargs['source'],
+                'Destination Number': kwargs['destination']
+            }
+        )
+
+        super(CallRecordCreate, self).create(request, *args, **kwargs)
 
 
 class BillByMonth(views.APIView):
@@ -15,31 +29,40 @@ class BillByMonth(views.APIView):
 
     def get(self, request, **kwargs):
         if kwargs['month']:
-            self.data_to_serialize = self.get_bill(
+            self.data_to_serialize = self.__get_bill(
                 source=kwargs['phone_number'],
                 month=kwargs['month'],
-                year=kwargs['year'])
+                year=kwargs['year']
+            )
 
             serializer = self.serializer_data()
 
-            return Response(serializer.data)
+            logger.debug(
+                'Try to see the bill'
+            )
+
+            return Response({
+                'records':serializer.data,
+            })
 
         last_month = (datetime.now().month) - 1
         current_year = datetime.now().year
 
-        self.data_to_serialize = self.get_bill(
+        self.data_to_serialize = self.__get_bill(
             source=kwargs['phone_number'],
             month=last_month,
             year=current_year)
 
         serializer = self.serializer_data()
 
-        return Response(serializer.data)
+        return Response({
+            'records':serializer.data,
+        })
 
     def serializer_data(self):
         return CallRecordSerializer(self.data_to_serialize, many=True)
 
-    def get_bill(self, **kwargs):
+    def __get_bill(self, **kwargs):
         return CallRecord.objects.filter(
             source=kwargs['source'],
             timestamp__month=kwargs['month'],
