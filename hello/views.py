@@ -14,7 +14,7 @@ class CallRecordCreate(generics.CreateAPIView):
     serializer_class = CallRecordSerializer
 
     def create(self, request, *args, **kwargs):
-        logger.debug(
+        logger.info(
             'Call Record was created', extra={
                 'Source Number': kwargs['source'],
                 'Destination Number': kwargs['destination']
@@ -37,7 +37,7 @@ class BillByMonth(views.APIView):
 
             serializer = self.serializer_data()
 
-            logger.debug(
+            logger.info(
                 'Try to see the bill'
             )
 
@@ -54,6 +54,10 @@ class BillByMonth(views.APIView):
             year=current_year)
 
         serializer = self.serializer_data()
+
+        logger.info(
+            'Try to see the bill'
+        )
 
         return Response({
             'records':serializer.data,

@@ -73,61 +73,22 @@ TEMPLATES = [
 
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': True,
-    'formatters': {
-        'standard': {
-            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s',
-            'datefmt' : "%d/%b/%Y %H:%M:%S",
-        },
-        'simple': {
-            'format': '%(levelname)s %(asctime)s %(message)s',
-            'datefmt' : "%d/%b/%Y %H:%M:%S",
-        },
-    },
-    'filters': {
-        'require_debug_true': {
-            '()': 'django.utils.log.RequireDebugTrue',
-        }
-    },
+    'disable_existing_loggers': False,
     'handlers': {
-        'null': {
-            'level':'DEBUG',
-            'class':'logging.NullHandler',
-        },
-        'default': {
-            'level':'DEBUG',
-            'class':'logging.handlers.RotatingFileHandler',
-            'filename':  os.path.join(BASE_DIR, 'logs', 'log'),
-            'maxBytes': 1024*1024*5, # 5 MB
-            'backupCount': 5,
-            'formatter':'standard',
-        },
-        'info_logfile': {
-            'level':'INFO',
-            'class':'logging.handlers.TimedRotatingFileHandler',
-            'filename':  os.path.join(BASE_DIR, 'logs', 'log'),
-            'when': 'D',
-            'formatter': 'standard',
-        },
-        'console':{
-            'level': 'DEBUG',
-            'class':'logging.StreamHandler',
-            'formatter': 'simple',
-            'filters': ['require_debug_true', ],
+        'console': {
+            'class': 'logging.StreamHandler',
         },
     },
     'loggers': {
-        'django': {
-            'handlers':['console'],
-            'propagate': True,
-            'level':'WARN',
+        '': {
+            'handlers': ['console'],
+            'level': 'INFO',
         },
-        'django.db.backends': {
-            'handlers': ['info_logfile', 'console'],
-            'level': 'DEBUG',
-            'propagate': False,
-        }
-    }
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+    },
 }
 
 WSGI_APPLICATION = 'bill.wsgi.application'
