@@ -1,5 +1,5 @@
 from django.contrib import admin
-from hello.models import *
+from callcenter.models import *
 # Register your models here.
 
 admin.site.register(CallRecord)

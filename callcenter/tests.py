@@ -2,12 +2,14 @@ from django.test import TestCase
 from model_mommy import mommy
 from .models import CallRecord
 
-class SimpleTest(TestCase):
+
+class CallRecordTest(TestCase):
     def setUp(self):
         # Every test needs access to the request factory.
-        self.call_record = mommy.make(CallRecord, type='end',
-            timestamp='2018-11-25 08:08:08', call_id=50,
-            source='', destination='')
+        self.call_record = mommy.make(
+            CallRecord, type='end', timestamp='2018-11-25 08:08:08',
+            call_id=50, source='', destination=''
+        )
 
     def test_call_record_creation(self):
         self.assertTrue(isinstance(self.call_record, CallRecord))

@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('hello', '0004_auto_20180624_2102'),
+        ('callcenter', '0004_auto_20180624_2102'),
     ]
 
     operations = [
@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('call_duration', models.TimeField()),
                 ('call_cost', models.FloatField()),
-                ('call_record', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='bills', to='hello.CallRecord')),
+                ('call_record', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='bills', to='callcenter.CallRecord')),
             ],
             options={
                 'verbose_name': 'Bill',

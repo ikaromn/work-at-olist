@@ -1,10 +1,9 @@
+import logging
+from datetime import datetime
 from rest_framework import generics, views
 from rest_framework.response import Response
-from rest_framework.renderers import JSONRenderer
-from .models import CallRecord
-from .serializers import CallRecordSerializer
-from datetime import datetime
-import logging
+from .models import CallRecord, Bill
+from .serializers import CallRecordSerializer, BillSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -12,16 +11,6 @@ logger = logging.getLogger(__name__)
 class CallRecordCreate(generics.CreateAPIView):
     queryset = CallRecord.objects.all()
     serializer_class = CallRecordSerializer
-
-    def create(self, request, *args, **kwargs):
-        logger.info(
-            'Call Record was created', extra={
-                'Source Number': kwargs['source'],
-                'Destination Number': kwargs['destination']
-            }
-        )
-
-        super(CallRecordCreate, self).create(request, *args, **kwargs)
 
 
 class BillByMonth(views.APIView):
@@ -37,12 +26,8 @@ class BillByMonth(views.APIView):
 
             serializer = self.serializer_data()
 
-            logger.info(
-                'Try to see the bill'
-            )
-
             return Response({
-                'records':serializer.data,
+                'records': serializer.data,
             })
 
         last_month = (datetime.now().month) - 1
@@ -55,19 +40,16 @@ class BillByMonth(views.APIView):
 
         serializer = self.serializer_data()
 
-        logger.info(
-            'Try to see the bill'
-        )
-
         return Response({
-            'records':serializer.data,
+            'records': serializer.data,
         })
 
     def serializer_data(self):
-        return CallRecordSerializer(self.data_to_serialize, many=True)
+        return BillSerializer(self.data_to_serialize, many=True)
 
     def __get_bill(self, **kwargs):
-        return CallRecord.objects.filter(
-            source=kwargs['source'],
-            timestamp__month=kwargs['month'],
-            timestamp__year=kwargs['year'])
+        return Bill.objects.filter(
+            call_record__source=kwargs['source'],
+            call_record__timestamp__month=kwargs['month'],
+            call_record__timestamp__year=kwargs['year'],
+            call_record__type=1)
