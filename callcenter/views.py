@@ -1,6 +1,7 @@
 import logging
+import coreapi
 from datetime import datetime
-from rest_framework import generics, views
+from rest_framework import generics, views, schemas
 from rest_framework.response import Response
 from .models import CallRecord, Bill
 from .serializers import CallRecordSerializer, BillSerializer
@@ -9,7 +10,6 @@ from rest_framework.decorators import\
     api_view, permission_classes, renderer_classes
 from rest_framework.permissions import AllowAny
 from rest_framework_swagger.renderers import OpenAPIRenderer, SwaggerUIRenderer
-from rest_framework import schemas
 
 
 @api_view()
@@ -17,9 +17,9 @@ from rest_framework import schemas
 @renderer_classes([OpenAPIRenderer, SwaggerUIRenderer])
 def schema_view(request):
 
-    generator = schemas.SchemaGenerator(title='Rest Swagger')
+    generator = schemas.SchemaGenerator(title='Bill API')
 
-    return Response(generator.get_schema(request=request))
+    return Response(generator.get_schema())
 
 
 logger = logging.getLogger(__name__)
@@ -32,13 +32,37 @@ class CallRecordCreate(generics.CreateAPIView):
 
 class BillByMonth(views.APIView):
     data_to_serialize = ''
+    schema = schemas.AutoSchema(manual_fields=[
+            coreapi.Field(
+                "phone_number",
+                required=True,
+                location="path",
+                description="The phone number to get the bill"
+            ),
+            coreapi.Field(
+                "month",
+                required=False,
+                location="query",
+                description="The month of the bill"
+            ),
+            coreapi.Field(
+                "year",
+                required=False,
+                location="query",
+                description="The year of the bill"
+            ),
+        ])
 
     def get(self, request, **kwargs):
-        if kwargs['month']:
+        """
+        Endpoint to return the bill with all call records in the last month
+        or the month and year gived
+        """
+        if self.request.query_params.get('month', None):
             self.data_to_serialize = self.__get_bill(
                 source=kwargs['phone_number'],
-                month=kwargs['month'],
-                year=kwargs['year']
+                month=self.request.query_params.get('month', None),
+                year=self.request.query_params.get('year', None)
             )
 
             serializer = self.serializer_data()
