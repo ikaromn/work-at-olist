@@ -28,11 +28,15 @@ class Bill(models.Model):
     )
     call_duration = models.TimeField()
     call_cost = models.FloatField()
+    fk_call_start = models.DateTimeField(null=False)
+    fk_call_end = models.DateTimeField(null=False)
 
     def create(self, **kwargs):
         self.call_record = kwargs['bill_data']['call']
         self.call_cost = kwargs['bill_data']['cost']
         self.call_duration = str(kwargs['bill_data']['call_duration'])
+        self.fk_call_start = str(kwargs['bill_data']['call_start'])
+        self.fk_call_end = str(kwargs['bill_data']['call_end'])
 
         self.save()
 

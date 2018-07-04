@@ -41,7 +41,9 @@ class BillTest(TestCase):
         bill_data_to_save = {
             'call': CallRecord.objects.get(id=2),
             'cost': 12.76,
-            'call_duration': timedelta(hours=1)
+            'call_duration': timedelta(hours=1),
+            'call_start': datetime(2018, 7, 7, 10, 25, 50, tzinfo=UTC),
+            'call_end': datetime(2018, 7, 7, 15, 25, 50, tzinfo=UTC)
         }
 
         bill_instance.create(bill_data=bill_data_to_save)
@@ -68,7 +70,7 @@ class BillValidatorTest(TestCase):
         validator_instance = BillValidator()
         call_id = CallRecord.objects.get(id=1).call_id
 
-        actual = validator_instance._BillValidator__existent_start_type(
+        actual = validator_instance._BillValidator__existent_pair_record(
             call_id
         )
 
@@ -79,7 +81,7 @@ class BillValidatorTest(TestCase):
 
         call_id = CallRecord.objects.get(id=3).call_id
 
-        actual = validator_instance._BillValidator__existent_start_type(
+        actual = validator_instance._BillValidator__existent_pair_record(
             call_id
         )
 
@@ -136,7 +138,9 @@ class BillValidatorTest(TestCase):
         expected = {
             'call': CallRecord.objects.get(id=2),
             'cost': 12.76,
-            'call_duration': timedelta(hours=1)
+            'call_duration': timedelta(hours=1),
+            'call_end': datetime(2018, 11, 25, 9, 8, 8, tzinfo=UTC),
+            'call_start': datetime(2018, 11, 25, 8, 8, 8, tzinfo=UTC)
         }
 
         self.assertEquals(actual, expected)

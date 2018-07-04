@@ -7,16 +7,15 @@ END_TYPE = 2
 class BillValidator:
     def validate_bill_to_record(self, **kwargs):
         call_data = kwargs['call_data']
-
         if call_data['type'] == 2:
-            return self.__existent_start_type(call_data['call_id'])
+            return self.__existent_pair_record(call_data['call_id'])
 
         return False
 
-    def __existent_start_type(self, call_id):
+    def __existent_pair_record(self, call_id):
         if CallRecord.objects.filter(
-            type=START_TYPE, call_id=call_id
-        ).exists():
+            call_id=call_id
+        ).count() > 1:
 
             return True
 
@@ -39,5 +38,7 @@ class BillValidator:
 
         bill_data['cost'] = cost
         bill_data['call_duration'] = call_duration
+        bill_data['call_start'] = start_call_datetime
+        bill_data['call_end'] = end_call_datetime
 
         return bill_data
