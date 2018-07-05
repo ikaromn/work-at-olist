@@ -58,39 +58,44 @@ class BillByMonth(views.APIView):
         Endpoint to return the bill with all call records in the last month
         or the month and year gived
         """
-        if self.request.query_params.get('month', None):
-            self.data_to_serialize = self.__get_bill(
-                source=kwargs['phone_number'],
-                month=self.request.query_params.get('month', None),
-                year=self.request.query_params.get('year', None)
-            )
-
-            serializer = self.serializer_data()
-
-            return Response({
-                'records': serializer.data,
-            })
-
-        last_month = (datetime.now().month) - 1
-        current_year = datetime.now().year
-
-        self.data_to_serialize = self.__get_bill(
-            source=kwargs['phone_number'],
-            month=last_month,
-            year=current_year)
+        self.data_to_serialize = self.__get_bill_by_month(
+            source=kwargs['phone_number'])
 
         serializer = self.serializer_data()
+        full_amount = self.__sum_the_amount(serializer.data)
 
         return Response({
+            'month': self.month,
+            'year': self.year,
+            'full_amount': full_amount,
             'records': serializer.data,
         })
 
     def serializer_data(self):
         return BillSerializer(self.data_to_serialize, many=True)
 
-    def __get_bill(self, **kwargs):
+    def __get_bill_by_month(self, **kwargs):
+        self.month = self.__get_month()
+        self.year = self.__get_year()
+
         return Bill.objects.filter(
             call_record__source=kwargs['source'],
-            call_record__timestamp__month=kwargs['month'],
-            call_record__timestamp__year=kwargs['year'],
-            call_record__type=1)
+            month=self.month,
+            year=self.year)
+
+    def __sum_the_amount(self, cost):
+        amount = 0
+        for i in cost:
+            amount += i['call_cost']
+
+        return amount
+
+    def __get_month(self):
+        return self.request.query_params.get('month', None)\
+            if self.request.query_params.get('month', None)\
+            else (datetime.now().month) - 1
+
+    def __get_year(self):
+        return self.request.query_params.get('year', None)\
+            if self.request.query_params.get('year', None)\
+            else datetime.now().year

@@ -40,5 +40,7 @@ class BillValidator:
         bill_data['call_duration'] = call_duration
         bill_data['call_start'] = start_call_datetime
         bill_data['call_end'] = end_call_datetime
+        bill_data['month'] = int(end_call_datetime.month)
+        bill_data['year'] = int(end_call_datetime.year)
 
         return bill_data

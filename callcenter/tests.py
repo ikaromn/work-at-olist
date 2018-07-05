@@ -27,12 +27,12 @@ class CallRecordTest(TestCase):
 class BillTest(TestCase):
     def setUp(self):
         self.call_record_start_one = mommy.make(
-            CallRecord, pk=1, type=1, timestamp='2018-11-25 08:08:08',
+            CallRecord, pk=1, type=1, timestamp='2018-10-31 23:55:00',
             call_id=1, source='11999998888', destination='11982223454'
         )
 
         self.call_record_end_one = mommy.make(
-            CallRecord, pk=2, type=2, timestamp='2018-11-25 09:08:08',
+            CallRecord, pk=2, type=2, timestamp='2018-11-1 00:01:08',
             call_id=1, source='', destination=''
         )
 
@@ -41,9 +41,11 @@ class BillTest(TestCase):
         bill_data_to_save = {
             'call': CallRecord.objects.get(id=2),
             'cost': 12.76,
-            'call_duration': timedelta(hours=1),
-            'call_start': datetime(2018, 7, 7, 10, 25, 50, tzinfo=UTC),
-            'call_end': datetime(2018, 7, 7, 15, 25, 50, tzinfo=UTC)
+            'call_duration': timedelta(hours=0, minutes=6, seconds=8),
+            'call_start': datetime(2018, 10, 31, 23, 55, 00, tzinfo=UTC),
+            'call_end': datetime(2018, 11, 1, 00, 1, 8, tzinfo=UTC),
+            'month': 11,
+            'year': 2018
         }
 
         bill_instance.create(bill_data=bill_data_to_save)
@@ -140,7 +142,9 @@ class BillValidatorTest(TestCase):
             'cost': 12.76,
             'call_duration': timedelta(hours=1),
             'call_end': datetime(2018, 11, 25, 9, 8, 8, tzinfo=UTC),
-            'call_start': datetime(2018, 11, 25, 8, 8, 8, tzinfo=UTC)
+            'call_start': datetime(2018, 11, 25, 8, 8, 8, tzinfo=UTC),
+            'month': 11,
+            'year': 2018
         }
 
         self.assertEquals(actual, expected)

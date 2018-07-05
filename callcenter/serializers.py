@@ -26,6 +26,11 @@ class CallRecordSerializer(serializers.ModelSerializer):
 
 
 class BillSerializer(serializers.ModelSerializer):
+    destination = serializers.SerializerMethodField('get_call_record')
+
     class Meta:
-        fields = '__all__'
+        exclude = ('month', 'year', 'call_record')
         model = Bill
+
+    def get_call_record(self, object):
+        return object.call_record.destination

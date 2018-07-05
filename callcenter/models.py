@@ -30,6 +30,8 @@ class Bill(models.Model):
     call_cost = models.FloatField()
     fk_call_start = models.DateTimeField(null=False)
     fk_call_end = models.DateTimeField(null=False)
+    month = models.IntegerField()
+    year = models.IntegerField()
 
     def create(self, **kwargs):
         self.call_record = kwargs['bill_data']['call']
@@ -37,6 +39,8 @@ class Bill(models.Model):
         self.call_duration = str(kwargs['bill_data']['call_duration'])
         self.fk_call_start = str(kwargs['bill_data']['call_start'])
         self.fk_call_end = str(kwargs['bill_data']['call_end'])
+        self.month = kwargs['bill_data']['month']
+        self.year = kwargs['bill_data']['year']
 
         self.save()
 
