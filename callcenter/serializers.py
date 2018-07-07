@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import CallRecord, Bill
+from .models import CallRecord, Bill, PriceRule
 from .validators import BillValidator
 
 
@@ -34,3 +34,9 @@ class BillSerializer(serializers.ModelSerializer):
 
     def get_call_record(self, object):
         return object.call_record.destination
+
+
+class PriceRuleSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = '__all__'
+        model = PriceRule
