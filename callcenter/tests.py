@@ -1,7 +1,8 @@
+from decimal import Decimal
 from datetime import timedelta, datetime
 from django.test import TestCase
 from model_mommy import mommy
-from .models import CallRecord, Bill
+from .models import CallRecord, Bill, PriceRule
 from .validators import BillValidator, BillDateValidator
 from .serializers import CallRecordSerializer
 from .exceptions import InvalidBillDate
@@ -50,6 +51,40 @@ class BillTest(TestCase):
         }
 
         bill_instance.create(bill_data=bill_data_to_save)
+
+
+class PriceRuleTest(TestCase):
+    def setUp(self):
+        self.price_rule = mommy.make(
+            PriceRule, rule_type=1, fixed_charge=Decimal('0.36'),
+            call_charge=Decimal('0.09'),
+            start_period=datetime(2018, 7, 10, 22, 0, 0).time(),
+            end_period=datetime(2018, 7, 10, 6, 0, 0).time()
+        )
+
+    def test_price_rule_create(self):
+        price_rule_one = PriceRule.objects.get(id=1)
+
+        self.assertEqual(
+            self.price_rule.rule_type,
+            price_rule_one.rule_type
+        )
+        self.assertEqual(
+            self.price_rule.fixed_charge,
+            price_rule_one.fixed_charge
+        )
+        self.assertEqual(
+            self.price_rule.call_charge,
+            price_rule_one.call_charge
+        )
+        self.assertEqual(
+            self.price_rule.start_period,
+            price_rule_one.start_period
+        )
+        self.assertEqual(
+            self.price_rule.end_period,
+            price_rule_one.end_period
+        )
 
 
 class BillValidatorTest(TestCase):
