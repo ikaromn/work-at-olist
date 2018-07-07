@@ -4,7 +4,7 @@ from django.test import TestCase
 from model_mommy import mommy
 from .models import CallRecord, Bill, PriceRule
 from .validators import BillValidator, BillDateValidator
-from .serializers import CallRecordSerializer
+from .serializers import CallRecordSerializer, BillSerializer
 from .exceptions import InvalidBillDate
 from pytz import UTC
 
@@ -84,6 +84,93 @@ class PriceRuleTest(TestCase):
         self.assertEqual(
             self.price_rule.end_period,
             price_rule_one.end_period
+        )
+
+
+class CallRecordSerializerTest(TestCase):
+    def setUp(self):
+        self.call_record_attributes_start = {
+            'type': 1,
+            'call_id': 1,
+            'source': '11986091154',
+            'destination': '11982223465',
+            'timestamp': datetime(2018, 7, 22, 6, 0, 56)
+        }
+
+        self.call_record_attributes_end = {
+            'type': 2,
+            'call_id': 1,
+            'timestamp': datetime(2018, 7, 22, 7, 0, 56, tzinfo=UTC)
+        }
+
+        self.serializer_data = {
+            'type': 1,
+            'call_id': 1,
+            'source': '11986091154',
+            'destination': '11982223465',
+            'timestamp': '2018-7-22 06:00:56'
+        }
+
+    def test_serializer_create(self):
+        call_record_serializer_instance_one = CallRecordSerializer()
+        call_record_serializer_instance_two = CallRecordSerializer()
+
+        self.serializer_one = call_record_serializer_instance_one.create(
+            validated_data=self.call_record_attributes_start
+        )
+
+        self.serializer_two = call_record_serializer_instance_two.create(
+            validated_data=self.call_record_attributes_end
+        )
+
+        self.assertIsInstance(self.serializer_one, CallRecord)
+        self.assertIsInstance(self.serializer_two, CallRecord)
+
+
+class BillSerializerTest(TestCase):
+    def setUp(self):
+        self.call_record_end_one = mommy.make(
+            CallRecord, pk=1, type=2, timestamp='2018-11-25 09:08:08',
+            call_id=1, source='', destination=''
+        )
+
+        self.call_record_start_one = mommy.make(
+            CallRecord, pk=2, type=1, timestamp='2018-11-25 08:08:08',
+            call_id=1, source='11999998888', destination='11982223454'
+        )
+
+        self.bill_attributes = {
+            'call_record': CallRecord.objects.get(id=2),
+            'call_cost': 12.76,
+            'call_duration': str(timedelta(hours=1)),
+            'fk_call_end': str(datetime(2018, 11, 25, 9, 8, 8, tzinfo=UTC)),
+            'fk_call_start': str(datetime(2018, 11, 25, 8, 8, 8, tzinfo=UTC)),
+            'month': 11,
+            'year': 2018
+        }
+
+        self.serializer_data = {
+            'call_record': CallRecord.objects.get(id=2),
+            'cost': 12.76,
+            'call_duration': "01:00:00",
+            'call_end': "2018-11-25T09:08:08Z",
+            'call_start': "2018-11-25T08:08:08Z",
+            'month': 11,
+            'year': 2018
+        }
+
+        self.bill = Bill.objects.create(**self.bill_attributes)
+        self.serializer = BillSerializer(instance=self.bill)
+
+    def test_serializer_create(self):
+        data = self.serializer.data
+
+        self.assertEqual(
+            set(data.keys()),
+            set([
+                'destination', 'id', 'call_duration',
+                'call_cost', 'fk_call_start', 'fk_call_end'
+                ])
         )
 
 
