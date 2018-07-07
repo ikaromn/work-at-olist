@@ -3,8 +3,9 @@ import coreapi
 from datetime import datetime
 from rest_framework import generics, views, schemas
 from rest_framework.response import Response
-from .models import CallRecord, Bill
-from .serializers import CallRecordSerializer, BillSerializer
+from .models import CallRecord, Bill, PriceRule
+from .serializers import\
+    CallRecordSerializer, BillSerializer, PriceRuleSerializer
 from .validators import BillDateValidator
 from django.conf.urls import url
 from rest_framework.decorators import\
@@ -101,3 +102,13 @@ class BillByMonth(views.APIView):
             amount += i['call_cost']
 
         return amount
+
+
+class PriceRuleListCreate(generics.ListCreateAPIView):
+    queryset = PriceRule.objects.all()
+    serializer_class = PriceRuleSerializer
+
+
+class PriceRuleUpdate(generics.UpdateAPIView):
+    queryset = PriceRule.objects.all()
+    serializer_class = PriceRuleSerializer
