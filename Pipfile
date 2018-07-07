@@ -10,6 +10,7 @@ djangorestframework = "*"
 model-mommy = "*"
 mock = "*"
 django-rest-swagger = "*"
+python-dateutil = "*"
 
 [requires]
 python_version = "3.6"

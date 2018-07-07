@@ -2,8 +2,9 @@ from datetime import timedelta, datetime
 from django.test import TestCase
 from model_mommy import mommy
 from .models import CallRecord, Bill
-from .validators import BillValidator
+from .validators import BillValidator, BillDateValidator
 from .serializers import CallRecordSerializer
+from .exceptions import InvalidBillDate
 from pytz import UTC
 
 
@@ -148,3 +149,45 @@ class BillValidatorTest(TestCase):
         }
 
         self.assertEquals(actual, expected)
+
+
+class BillDateValidatorTest(TestCase):
+    def test_validate_bill_date(self):
+        bill_date_validator = BillDateValidator()
+        actual = bill_date_validator.validate_bill_date('5', '2017')
+        bill_date_validator.actual_date = datetime(2018, 5, 25)
+
+        expected = {
+            "month": 5,
+            "year": 2017
+        }
+
+        self.assertEqual(actual, expected)
+
+    def test_validate_bill_date_raises(self):
+        bill_date_validator = BillDateValidator()
+        bill_date_validator.actual_date = datetime(2018, 5, 25)
+
+        with self.assertRaises(InvalidBillDate):
+            bill_date_validator.validate_bill_date('5', '12017')
+
+        with self.assertRaises(InvalidBillDate):
+            bill_date_validator.validate_bill_date('13', '2017')
+
+        with self.assertRaises(InvalidBillDate):
+            bill_date_validator.validate_bill_date('5', '2018')
+
+        with self.assertRaises(InvalidBillDate):
+            bill_date_validator.validate_bill_date('1', '2019')
+
+    def test_validate_bill_date_date_none(self):
+        bill_date_validator = BillDateValidator()
+        bill_date_validator.actual_date = datetime(2018, 5, 25)
+        actual = bill_date_validator.validate_bill_date()
+
+        expected = {
+            "month": 4,
+            "year": 2018
+        }
+
+        self.assertEqual(actual, expected)

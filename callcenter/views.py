@@ -5,6 +5,7 @@ from rest_framework import generics, views, schemas
 from rest_framework.response import Response
 from .models import CallRecord, Bill
 from .serializers import CallRecordSerializer, BillSerializer
+from .validators import BillDateValidator
 from django.conf.urls import url
 from rest_framework.decorators import\
     api_view, permission_classes, renderer_classes
@@ -32,6 +33,7 @@ class CallRecordCreate(generics.CreateAPIView):
 
 class BillByMonth(views.APIView):
     data_to_serialize = ''
+    date_validator = BillDateValidator()
     schema = schemas.AutoSchema(manual_fields=[
             coreapi.Field(
                 "phone_number",
@@ -43,13 +45,15 @@ class BillByMonth(views.APIView):
                 "month",
                 required=False,
                 location="query",
-                description="The month of the bill"
+                description="The month of the bill",
+                type="int"
             ),
             coreapi.Field(
                 "year",
                 required=False,
                 location="query",
-                description="The year of the bill"
+                description="The year of the bill",
+                type="int"
             ),
         ])
 
@@ -58,44 +62,42 @@ class BillByMonth(views.APIView):
         Endpoint to return the bill with all call records in the last month
         or the month and year gived
         """
-        self.data_to_serialize = self.__get_bill_by_month(
-            source=kwargs['phone_number'])
+        try:
+            self.data_to_serialize = self.__get_bill_by_month(
+                source=kwargs['phone_number'])
 
-        serializer = self.serializer_data()
-        full_amount = self.__sum_the_amount(serializer.data)
+            serializer = self.serializer_data()
+            full_amount = self.__sum_the_amount(serializer.data)
 
-        return Response({
-            'month': self.month,
-            'year': self.year,
-            'full_amount': full_amount,
-            'records': serializer.data,
-        })
+            return Response({
+                'month': self.date_dict['month'],
+                'year': self.date_dict['year'],
+                'full_amount': full_amount,
+                'records': serializer.data,
+            })
+        except Exception as e:
+            return Response({
+                'error': str(e)
+            })
 
     def serializer_data(self):
         return BillSerializer(self.data_to_serialize, many=True)
 
     def __get_bill_by_month(self, **kwargs):
-        self.month = self.__get_month()
-        self.year = self.__get_year()
+        self.date_dict = self.date_validator.validate_bill_date(
+            self.request.query_params.get('month', None),
+            self.request.query_params.get('year', None)
+        )
 
         return Bill.objects.filter(
             call_record__source=kwargs['source'],
-            month=self.month,
-            year=self.year)
+            month=self.date_dict['month'],
+            year=self.date_dict['year'])
 
     def __sum_the_amount(self, cost):
         amount = 0
+
         for i in cost:
             amount += i['call_cost']
 
         return amount
-
-    def __get_month(self):
-        return self.request.query_params.get('month', None)\
-            if self.request.query_params.get('month', None)\
-            else (datetime.now().month) - 1
-
-    def __get_year(self):
-        return self.request.query_params.get('year', None)\
-            if self.request.query_params.get('year', None)\
-            else datetime.now().year
