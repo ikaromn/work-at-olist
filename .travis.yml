@@ -7,15 +7,19 @@ services:
 
 install:
 - pip install pipenv --upgrade-strategy=only-if-needed
+- pip install coverage
+- pip install codecov
 - pipenv install
 before_script:
 - psql -c 'create database test_db;' -U postgres
 
 script:
 - python manage.py test
+- coverage run manage.py test
 
 after_success:
-- bash < (curl -s https://codecov.io/bash)
+- codecov
+- bash <(curl -s https://codecov.io/bash)
 
 deploy:
   - provider: releases
