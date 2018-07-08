@@ -26,7 +26,7 @@ class Bill(models.Model):
         CallRecord, related_name='bills', on_delete=models.CASCADE
     )
     call_duration = models.TimeField()
-    call_cost = models.FloatField()
+    call_cost = models.DecimalField(max_digits=7, decimal_places=2)
     fk_call_start = models.DateTimeField(null=False)
     fk_call_end = models.DateTimeField(null=False)
     month = models.IntegerField()
@@ -54,8 +54,8 @@ class PriceRule(models.Model):
         (2, 'reduced')
     )
     rule_type = models.IntegerField(choices=PRICE_RULE_TYPE, unique=True)
-    fixed_charge = models.DecimalField(max_digits=5, decimal_places=2)
-    call_charge = models.DecimalField(max_digits=5, decimal_places=2)
+    fixed_charge = models.DecimalField(max_digits=7, decimal_places=2)
+    call_charge = models.DecimalField(max_digits=7, decimal_places=2)
     start_period = models.TimeField()
     end_period = models.TimeField()
 

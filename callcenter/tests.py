@@ -3,7 +3,7 @@ from datetime import timedelta, datetime
 from django.test import TestCase
 from model_mommy import mommy
 from .models import CallRecord, Bill, PriceRule
-from .validators import BillValidator, BillDateValidator
+from .validators import BillValidator, BillDateValidator, PriceGenarator
 from .serializers import CallRecordSerializer, BillSerializer
 from .exceptions import InvalidBillDate
 from pytz import UTC
@@ -89,6 +89,20 @@ class PriceRuleTest(TestCase):
 
 class CallRecordSerializerTest(TestCase):
     def setUp(self):
+        self.price_rule_standart = mommy.make(
+            PriceRule, id=1, rule_type=1, fixed_charge=Decimal('0.36'),
+            call_charge=Decimal('0.09'),
+            start_period=datetime(2018, 7, 10, 6, 0, 0).time(),
+            end_period=datetime(2018, 7, 10, 22, 0, 0).time()
+        )
+
+        self.price_rule_reduced = mommy.make(
+            PriceRule, id=2, rule_type=2, fixed_charge=Decimal('0.36'),
+            call_charge=Decimal('0'),
+            start_period=datetime(2018, 7, 9, 22, 0, 0).time(),
+            end_period=datetime(2018, 7, 10, 6, 0, 0).time()
+        )
+
         self.call_record_attributes_start = {
             'type': 1,
             'call_id': 1,
@@ -100,7 +114,7 @@ class CallRecordSerializerTest(TestCase):
         self.call_record_attributes_end = {
             'type': 2,
             'call_id': 1,
-            'timestamp': datetime(2018, 7, 22, 7, 0, 56, tzinfo=UTC)
+            'timestamp': datetime(2018, 7, 22, 7, 0, 56)
         }
 
         self.serializer_data = {
@@ -176,6 +190,20 @@ class BillSerializerTest(TestCase):
 
 class BillValidatorTest(TestCase):
     def setUp(self):
+        self.price_rule_standart = mommy.make(
+            PriceRule, id=1, rule_type=1, fixed_charge=Decimal('0.36'),
+            call_charge=Decimal('0.09'),
+            start_period=datetime(2018, 7, 10, 6, 0, 0).time(),
+            end_period=datetime(2018, 7, 10, 22, 0, 0).time()
+        )
+
+        self.price_rule_reduced = mommy.make(
+            PriceRule, id=2, rule_type=2, fixed_charge=Decimal('0.36'),
+            call_charge=Decimal('0'),
+            start_period=datetime(2018, 7, 9, 22, 0, 0).time(),
+            end_period=datetime(2018, 7, 10, 6, 0, 0).time()
+        )
+
         self.call_record_end_one = mommy.make(
             CallRecord, pk=1, type=2, timestamp='2018-11-25 09:08:08',
             call_id=1, source='', destination=''
@@ -252,7 +280,7 @@ class BillValidatorTest(TestCase):
         validator_instance = BillValidator()
         call_record_serializer = {
             'type': 2,
-            'timestamp': datetime(2018, 11, 25, 9, 8, 8, tzinfo=UTC),
+            'timestamp': datetime(2018, 11, 25, 9, 8, 8),
             'call_id': 1
         }
 
@@ -262,10 +290,10 @@ class BillValidatorTest(TestCase):
 
         expected = {
             'call': CallRecord.objects.get(id=2),
-            'cost': 12.76,
+            'cost': Decimal('5.76'),
             'call_duration': timedelta(hours=1),
-            'call_end': datetime(2018, 11, 25, 9, 8, 8, tzinfo=UTC),
-            'call_start': datetime(2018, 11, 25, 8, 8, 8, tzinfo=UTC),
+            'call_end': datetime(2018, 11, 25, 9, 8, 8),
+            'call_start': datetime(2018, 11, 25, 8, 8, 8),
             'month': 11,
             'year': 2018
         }
@@ -313,3 +341,35 @@ class BillDateValidatorTest(TestCase):
         }
 
         self.assertEqual(actual, expected)
+
+
+class PeriodValidatorTest(TestCase):
+    def setUp(self):
+        self.price_rule_standart = mommy.make(
+            PriceRule, id=1, rule_type=1, fixed_charge=Decimal('0.36'),
+            call_charge=Decimal('0.09'),
+            start_period=datetime(2018, 7, 10, 6, 0, 0).time(),
+            end_period=datetime(2018, 7, 10, 22, 0, 0).time()
+        )
+
+        self.price_rule_reduced = mommy.make(
+            PriceRule, id=2, rule_type=2, fixed_charge=Decimal('0.36'),
+            call_charge=Decimal('0'),
+            start_period=datetime(2018, 7, 9, 22, 0, 0).time(),
+            end_period=datetime(2018, 7, 10, 6, 0, 0).time()
+        )
+
+        self.call_record_end_one = mommy.make(
+            CallRecord, pk=1, type=2, timestamp='2018-11-25 22:10:56',
+            call_id=1, source='', destination=''
+        )
+
+        self.call_record_start_one = mommy.make(
+            CallRecord, pk=2, type=1, timestamp='2018-11-25 21:57:13',
+            call_id=1, source='11999998888', destination='11982223454'
+        )
+
+    def test_total_in_range_rule(self):
+        period_validator_instance = PriceGenarator()
+        actual = period_validator_instance.genarate_cost(1)
+        self.assertEqual(actual, Decimal('0.54'))

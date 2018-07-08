@@ -1,5 +1,6 @@
 import logging
 import coreapi
+from decimal import Decimal
 from datetime import datetime
 from rest_framework import generics, views, schemas
 from rest_framework.response import Response
@@ -96,10 +97,10 @@ class BillByMonth(views.APIView):
             year=self.date_dict['year'])
 
     def __sum_the_amount(self, cost):
-        amount = 0
+        amount = Decimal('0.0')
 
         for i in cost:
-            amount += i['call_cost']
+            amount += Decimal(i['call_cost'])
 
         return amount
 
