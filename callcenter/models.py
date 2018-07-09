@@ -1,12 +1,11 @@
 from django.db import models
 
-TYPE_CHOICES = (
-    (1, 'start'),
-    (2, 'end')
-)
-
 
 class CallRecord(models.Model):
+    TYPE_CHOICES = (
+        (1, 'start'),
+        (2, 'end')
+    )
     type = models.IntegerField(choices=TYPE_CHOICES)
     timestamp = models.DateTimeField(null=True)
     call_id = models.IntegerField()
@@ -27,7 +26,7 @@ class Bill(models.Model):
         CallRecord, related_name='bills', on_delete=models.CASCADE
     )
     call_duration = models.TimeField()
-    call_cost = models.FloatField()
+    call_cost = models.DecimalField(max_digits=7, decimal_places=2)
     fk_call_start = models.DateTimeField(null=False)
     fk_call_end = models.DateTimeField(null=False)
     month = models.IntegerField()
@@ -47,3 +46,19 @@ class Bill(models.Model):
     class Meta:
         verbose_name = 'Bill'
         verbose_name_plural = 'Bills'
+
+
+class PriceRule(models.Model):
+    PRICE_RULE_TYPE = (
+        (1, 'standart'),
+        (2, 'reduced')
+    )
+    rule_type = models.IntegerField(choices=PRICE_RULE_TYPE, unique=True)
+    fixed_charge = models.DecimalField(max_digits=7, decimal_places=2)
+    call_charge = models.DecimalField(max_digits=7, decimal_places=2)
+    start_period = models.TimeField()
+    end_period = models.TimeField()
+
+    class Meta:
+        verbose_name = 'Price rule'
+        verbose_name_plural = 'Price rules'

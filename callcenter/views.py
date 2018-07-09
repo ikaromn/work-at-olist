@@ -1,12 +1,12 @@
 import logging
 import coreapi
-from datetime import datetime
+from decimal import Decimal
 from rest_framework import generics, views, schemas
 from rest_framework.response import Response
-from .models import CallRecord, Bill
-from .serializers import CallRecordSerializer, BillSerializer
+from .models import CallRecord, Bill, PriceRule
+from .serializers import\
+    CallRecordSerializer, BillSerializer, PriceRuleSerializer
 from .validators import BillDateValidator
-from django.conf.urls import url
 from rest_framework.decorators import\
     api_view, permission_classes, renderer_classes
 from rest_framework.permissions import AllowAny
@@ -80,9 +80,6 @@ class BillByMonth(views.APIView):
                 'error': str(e)
             })
 
-    def serializer_data(self):
-        return BillSerializer(self.data_to_serialize, many=True)
-
     def __get_bill_by_month(self, **kwargs):
         self.date_dict = self.date_validator.validate_bill_date(
             self.request.query_params.get('month', None),
@@ -94,10 +91,23 @@ class BillByMonth(views.APIView):
             month=self.date_dict['month'],
             year=self.date_dict['year'])
 
+    def serializer_data(self):
+        return BillSerializer(self.data_to_serialize, many=True)
+
     def __sum_the_amount(self, cost):
-        amount = 0
+        amount = Decimal('0.0')
 
         for i in cost:
-            amount += i['call_cost']
+            amount += Decimal(i['call_cost'])
 
         return amount
+
+
+class PriceRuleListCreate(generics.ListCreateAPIView):
+    queryset = PriceRule.objects.all()
+    serializer_class = PriceRuleSerializer
+
+
+class PriceRuleUpdate(generics.UpdateAPIView):
+    queryset = PriceRule.objects.all()
+    serializer_class = PriceRuleSerializer

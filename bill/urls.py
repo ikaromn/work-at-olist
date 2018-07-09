@@ -7,9 +7,14 @@ admin.autodiscover()
 
 urlpatterns = [
     url(r'call-record/$', views.CallRecordCreate.as_view(),
-        name='call-record-create'),
+        name='call_record_create'),
     url(r'bill/(?P<phone_number>[0-9]+)/$',
-        views.BillByMonth.as_view(), name='bill-by-month'),
-    url(r'^docs/$', views.schema_view, name="docs"),
+        views.BillByMonth.as_view(), name='bill_by_month'),
+    url(r'price-rule/$', views.PriceRuleListCreate.as_view(),
+        name='price_rule_list_create'),
+    url(r'price-rule/(?P<pk>[0-9]+)/$', views.PriceRuleUpdate.as_view(),
+        name='price_rule_update'),
+    url(r'^docs/$', views.schema_view,
+        name="docs"),
     path('admin/', admin.site.urls),
 ]
