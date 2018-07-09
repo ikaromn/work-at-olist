@@ -35,18 +35,17 @@ class BillValidator:
 
         end_call_datetime = call_record_data['timestamp']
         call_duration = end_call_datetime - start_call_datetime
-        cost = PriceGenarator().genarate_cost(call_id)
+        cost = PriceGenerator().generate_cost(call_id)
 
-        bill_data = {}
-        bill_data['call'] = call_record_intance
-        bill_data['cost'] = cost
-        bill_data['call_duration'] = call_duration
-        bill_data['call_start'] = start_call_datetime
-        bill_data['call_end'] = end_call_datetime
-        bill_data['month'] = int(end_call_datetime.month)
-        bill_data['year'] = int(end_call_datetime.year)
-
-        return bill_data
+        return {
+            'call': call_record_intance,
+            'cost': cost,
+            'call_duration': call_duration,
+            'call_start': start_call_datetime,
+            'call_end': end_call_datetime,
+            'month': int(end_call_datetime.month),
+            'year': int(end_call_datetime.year)
+        }
 
 
 class BillDateValidator:
@@ -91,13 +90,13 @@ class BillDateValidator:
         self.year = last_month.year
 
 
-class PriceGenarator:
+class PriceGenerator:
     fixed_charge = None
     call_price = 0
     call_start = datetime.now()
     call_end = datetime.now()
 
-    def genarate_cost(self, call_id):
+    def generate_cost(self, call_id):
         self.call_start = CallRecord.objects.get(
             call_id=call_id, type=START_TYPE
         ).timestamp
@@ -106,11 +105,11 @@ class PriceGenarator:
             call_id=call_id, type=END_TYPE
         ).timestamp
 
-        cost = self.__genarate_call_cost()
+        cost = self.__generate_call_cost()
 
         return cost
 
-    def __genarate_call_cost(self):
+    def __generate_call_cost(self):
         price_rules = PriceRule.objects.all()
 
         for price_rule in price_rules:
@@ -137,41 +136,54 @@ class PriceGenarator:
         return start_period <= call_start or call_start <= end_period
 
     def __set_fixed_charge(self, fixed_charge):
+        """
+        Set fixed charge if aren't setted
+        """
         if not self.fixed_charge:
             self.fixed_charge = fixed_charge
 
     def __calculate_price_by_period(self, price_rule):
-        for date_period in self.__count_days_in_period(
+        """
+        Calculate the cost in de current period case call started
+        in this period rule
+        """
+        for day_occurance in self.__list_days_in_call_period(
                 self.call_start, self.call_end):
-            charge_start_period = self.__set_charge_with_date(
-                date_period, price_rule.start_period
+            charge_start_period = self.__replace_time_in_day_occurence(
+                day_occurance, price_rule.start_period
             )
-            charge_end_period = self.__set_charge_with_date(
-                date_period, price_rule.end_period
+            charge_end_period = self.__replace_time_in_day_occurence(
+                day_occurance, price_rule.end_period
             )
 
             if charge_end_period < charge_start_period:
                 charge_end_period += timezone.timedelta(days=1)
 
-            period_start = self.call_start\
+            period_start_to_tax = self.call_start\
                 if self.call_start > charge_start_period\
                 else charge_start_period
 
-            period_end = self.call_end\
+            period_end_to_tax = self.call_end\
                 if self.call_end < charge_end_period\
                 else charge_end_period
 
-            if period_start < period_end:
-                period_to_charge = period_end - period_start
+            if period_start_to_tax < period_end_to_tax:
+                period_to_charge = period_end_to_tax - period_start_to_tax
                 minutes_period = int(period_to_charge.seconds / 60)
 
                 self.call_price += price_rule.call_charge * minutes_period
 
-    def __count_days_in_period(self, start, end):
+    def __list_days_in_call_period(self, start, end):
+        """
+        Return a list of days that was occurred in start and end period
+        """
         return list(rrule(DAILY, dtstart=start, until=end))
 
-    def __set_charge_with_date(self, date_period, rule_period):
-        return date_period.replace(
+    def __replace_time_in_day_occurence(self, day_occurence, rule_period):
+        """
+        Set the time of rule in a day occurence
+        """
+        return day_occurence.replace(
             hour=rule_period.hour,
             minute=rule_period.minute,
             second=rule_period.second,

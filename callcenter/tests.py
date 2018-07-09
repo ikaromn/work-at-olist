@@ -3,10 +3,9 @@ from datetime import timedelta, datetime
 from django.test import TestCase
 from model_mommy import mommy
 from .models import CallRecord, Bill, PriceRule
-from .validators import BillValidator, BillDateValidator, PriceGenarator
+from .validators import BillValidator, BillDateValidator, PriceGenerator
 from .serializers import CallRecordSerializer, BillSerializer
 from .exceptions import InvalidBillDate
-from pytz import UTC
 
 
 class CallRecordTest(TestCase):
@@ -44,8 +43,8 @@ class BillTest(TestCase):
             'call': CallRecord.objects.get(id=2),
             'cost': 12.76,
             'call_duration': timedelta(hours=0, minutes=6, seconds=8),
-            'call_start': datetime(2018, 10, 31, 23, 55, 00, tzinfo=UTC),
-            'call_end': datetime(2018, 11, 1, 00, 1, 8, tzinfo=UTC),
+            'call_start': datetime(2018, 10, 31, 23, 55, 00),
+            'call_end': datetime(2018, 11, 1, 00, 1, 8),
             'month': 11,
             'year': 2018
         }
@@ -157,8 +156,8 @@ class BillSerializerTest(TestCase):
             'call_record': CallRecord.objects.get(id=2),
             'call_cost': 12.76,
             'call_duration': str(timedelta(hours=1)),
-            'fk_call_end': str(datetime(2018, 11, 25, 9, 8, 8, tzinfo=UTC)),
-            'fk_call_start': str(datetime(2018, 11, 25, 8, 8, 8, tzinfo=UTC)),
+            'fk_call_end': str(datetime(2018, 11, 25, 9, 8, 8)),
+            'fk_call_start': str(datetime(2018, 11, 25, 8, 8, 8)),
             'month': 11,
             'year': 2018
         }
@@ -343,7 +342,7 @@ class BillDateValidatorTest(TestCase):
         self.assertEqual(actual, expected)
 
 
-class PeriodValidatorTest(TestCase):
+class PriceGeneratorTest(TestCase):
     def setUp(self):
         self.price_rule_standart = mommy.make(
             PriceRule, id=1, rule_type=1, fixed_charge=Decimal('0.36'),
@@ -369,7 +368,7 @@ class PeriodValidatorTest(TestCase):
             call_id=1, source='11999998888', destination='11982223454'
         )
 
-    def test_total_in_range_rule(self):
-        period_validator_instance = PriceGenarator()
-        actual = period_validator_instance.genarate_cost(1)
+    def test_generate_cost(self):
+        period_validator_instance = PriceGenerator()
+        actual = period_validator_instance.generate_cost(1)
         self.assertEqual(actual, Decimal('0.54'))

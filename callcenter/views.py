@@ -1,14 +1,12 @@
 import logging
 import coreapi
 from decimal import Decimal
-from datetime import datetime
 from rest_framework import generics, views, schemas
 from rest_framework.response import Response
 from .models import CallRecord, Bill, PriceRule
 from .serializers import\
     CallRecordSerializer, BillSerializer, PriceRuleSerializer
 from .validators import BillDateValidator
-from django.conf.urls import url
 from rest_framework.decorators import\
     api_view, permission_classes, renderer_classes
 from rest_framework.permissions import AllowAny
