@@ -80,9 +80,6 @@ class BillByMonth(views.APIView):
                 'error': str(e)
             })
 
-    def serializer_data(self):
-        return BillSerializer(self.data_to_serialize, many=True)
-
     def __get_bill_by_month(self, **kwargs):
         self.date_dict = self.date_validator.validate_bill_date(
             self.request.query_params.get('month', None),
@@ -93,6 +90,9 @@ class BillByMonth(views.APIView):
             call_record__source=kwargs['source'],
             month=self.date_dict['month'],
             year=self.date_dict['year'])
+
+    def serializer_data(self):
+        return BillSerializer(self.data_to_serialize, many=True)
 
     def __sum_the_amount(self, cost):
         amount = Decimal('0.0')

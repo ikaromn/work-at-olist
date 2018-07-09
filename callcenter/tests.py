@@ -1,11 +1,12 @@
 from decimal import Decimal
 from datetime import timedelta, datetime
-from django.test import TestCase
+from django.test import TestCase, RequestFactory
 from model_mommy import mommy
 from .models import CallRecord, Bill, PriceRule
 from .validators import BillValidator, BillDateValidator, PriceGenerator
 from .serializers import CallRecordSerializer, BillSerializer
 from .exceptions import InvalidBillDate
+from .views import BillByMonth
 
 
 class CallRecordTest(TestCase):
@@ -372,3 +373,61 @@ class PriceGeneratorTest(TestCase):
         period_validator_instance = PriceGenerator()
         actual = period_validator_instance.generate_cost(1)
         self.assertEqual(actual, Decimal('0.54'))
+
+
+class BillByMonthTest(TestCase):
+    def setUp(self):
+        self._first_instance = mommy.make(
+            CallRecord, pk=1, type=2, timestamp='2019-4-25 22:10:56',
+            call_id=1, source='', destination=''
+        )
+        self._second_instance = mommy.make(
+            CallRecord, pk=2, type=1, timestamp='2019-4-25 21:57:13',
+            call_id=1, source='11999998888', destination='11982223454'
+        )
+        self._third_instance = mommy.make(
+            Bill, call_record=CallRecord.objects.get(id=2), call_cost=12.76,
+            call_duration='01:00:00', fk_call_end='2019-4-25 22:10:56',
+            fk_call_start='2019-4-25 21:57:13', month=4, year=2019
+        )
+
+    def test_get_bill_by_month(self):
+        bill_view_instance = BillByMonth()
+        bill_view_instance.date_validator.actual_date = datetime(
+            2019, 5, 7
+        )
+        data_to_serialize = Bill.objects.filter(
+            month=4, year=2019, call_record__source='11999998888'
+        )
+        expects_records = BillSerializer(data_to_serialize, many=True)
+        request = RequestFactory().get('/bill/11999998888/')
+        response = bill_view_instance.as_view()(
+            request,
+            phone_number='11999998888'
+        )
+
+        expected = {
+            'month': 4,
+            'year': 2019,
+            'full_amount': Decimal('12.76'),
+            'records': expects_records.data
+        }
+
+        self.assertEqual(response.data, expected)
+
+    def test_get_bill_by_month_exception(self):
+        bill_view_instance = BillByMonth()
+        bill_view_instance.date_validator.actual_date = datetime(
+            2019, 5, 7
+        )
+        request = RequestFactory().get('/bill/11999998888/?month=5&year=2019')
+        response = bill_view_instance.as_view()(
+            request,
+            phone_number='11999998888'
+        )
+
+        expected = {
+            "error": "The bill to this month isn't closed yet"
+        }
+
+        self.assertEqual(response.data, expected)
