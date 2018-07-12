@@ -22,7 +22,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'CHANGE_ME!!!! (P.S. the SECRET_KEY environment variable will be used, if set, instead).'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'cg#p$g+j9tax!#a3cup@1$8obt2_+&k3q+pmu)5%asj6yjpkag')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -77,18 +77,18 @@ WSGI_APPLICATION = 'bill.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
-
-DATABASES = {
-    'default': {
+DATABASE_URL = {
+    'default':{
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'callcenter',
-        'USER': 'postgres',
-        'PASSWORD': 'root',
-        'HOST': 'localhost',
-        'PORT':'',
+        'NAME': os.environ.get('NAME', 'postgres'),
+        'USER': os.environ.get('USER', 'postgres'),
+        'PASSWORD': os.environ.get('PASSWORD', 'root'),
+        'HOST': os.environ.get('HOST', ''),
+        'PORT': os.environ.get('PORT', ''),
     }
 }
 
+DATABASES = os.environ.get('DATABASE_URL', DATABASE_URL)
 
 # Password validation
 # https://docs.djangoproject.com/en/2.0/ref/settings/#auth-password-validators

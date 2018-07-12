@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+  db:
+    image: postgres
+  web:
+    build: .
+    volumes:
+      - .:/code
+    environment:
+      - HOST=db
+      - NAME=postgres
+      - USER=postgres
+      - PASSWORD=root
+      - PORT=5432
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    entrypoint:
+      - sh
+      - -c
+      - |
+        sleep 3
+        python3 manage.py migrate
+        python3 manage.py runserver 0.0.0.0:8000
