@@ -80,11 +80,11 @@ WSGI_APPLICATION = 'bill.wsgi.application'
 DATABASE_URL = {
     'default':{
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
-        'USER': 'postgres',
-        'PASSWORD': 'root',
-        'HOST': '',
-        'PORT':'',
+        'NAME': os.environ.get('NAME', 'postgres'),
+        'USER': os.environ.get('USER', 'postgres'),
+        'PASSWORD': os.environ.get('PASSWORD', 'root'),
+        'HOST': os.environ.get('HOST', ''),
+        'PORT': os.environ.get('PORT', ''),
     }
 }
 

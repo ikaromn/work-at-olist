@@ -8,23 +8,25 @@ An application to record calls and calculation billings
 ## Requiriments:
 
 ```sh
-Python 3.6.5
-Pipenv
-PostgreSQL
+[Docker](https://docs.docker.com/install/)
+[docker-compose](https://docs.docker.com/compose/install/)
 ```
 ## Running Locally
+
+After install the requiriments run the follow commands:
+
+### To clone Project:
 
 ```sh
 $ git clone https://github.com/ikaromn/work-at-olist.git
 $ cd work-at-olist
-
-$ pipenv install
-
-$ createdb callcenter
-
-$ python manage.py migrate
-$ python manage.py collectstatic
-
-
-$ python manage.py runserver 0.0.0.0:8000
 ```
+
+### To run the Project:
+```sh
+$ docker-compose up -d
+$ docker-compose exec web bash
+# python manage.py migrate
+```
+
+If all works fine, go to your web browser and type `http://0.0.0.0:8000`
