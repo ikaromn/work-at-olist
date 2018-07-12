@@ -8,6 +8,7 @@ An application to record calls and calculation billings
 ## Requirements:
 
 [Docker](https://docs.docker.com/install/)
+
 [docker-compose](https://docs.docker.com/compose/install/)
 
 ## Running Locally
@@ -24,8 +25,6 @@ $ cd work-at-olist
 ### To run the Project:
 ```sh
 $ docker-compose up -d
-$ docker-compose exec web bash
-# python manage.py migrate
 ```
 
 If all works fine, go to your web browser and type `http://0.0.0.0:8000`
