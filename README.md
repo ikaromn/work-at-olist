@@ -5,12 +5,11 @@
 
 An application to record calls and calculation billings
 
-## Requiriments:
+## Requirements:
 
-```sh
 [Docker](https://docs.docker.com/install/)
 [docker-compose](https://docs.docker.com/compose/install/)
-```
+
 ## Running Locally
 
 After install the requiriments run the follow commands:

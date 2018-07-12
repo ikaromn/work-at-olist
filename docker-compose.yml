@@ -5,7 +5,6 @@ services:
     image: postgres
   web:
     build: .
-    command: python3 manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/code
     environment:
@@ -18,3 +17,10 @@ services:
       - "8000:8000"
     depends_on:
       - db
+    entrypoint:
+      - sh
+      - -c
+      - |
+        sleep 3
+        python3 manage.py migrate
+        python3 manage.py runserver 0.0.0.0:8000
