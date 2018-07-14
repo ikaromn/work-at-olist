@@ -63,11 +63,11 @@ class BillByMonth(views.APIView):
         or the month and year gived
         """
         try:
-            self.data_to_serialize = self.__get_bill_by_month(
+            self.data_to_serialize = self._get_bill_by_month(
                 source=kwargs['phone_number'])
 
             serializer = self.serializer_data()
-            full_amount = self.__sum_the_amount(serializer.data)
+            full_amount = self._sum_the_amount(serializer.data)
 
             return Response({
                 'month': self.date_dict['month'],
@@ -80,7 +80,7 @@ class BillByMonth(views.APIView):
                 'error': str(e)
             })
 
-    def __get_bill_by_month(self, **kwargs):
+    def _get_bill_by_month(self, **kwargs):
         self.date_dict = self.date_validator.validate_bill_date(
             self.request.query_params.get('month', None),
             self.request.query_params.get('year', None)
@@ -94,7 +94,7 @@ class BillByMonth(views.APIView):
     def serializer_data(self):
         return BillSerializer(self.data_to_serialize, many=True)
 
-    def __sum_the_amount(self, cost):
+    def _sum_the_amount(self, cost):
         amount = Decimal('0.0')
 
         for i in cost:

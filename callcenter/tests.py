@@ -219,27 +219,6 @@ class BillValidatorTest(TestCase):
             call_id=2, source='', destination=''
         )
 
-    def test_existent_start_type_true(self):
-        validator_instance = BillValidator()
-        call_id = CallRecord.objects.get(id=1).call_id
-
-        actual = validator_instance._BillValidator__existent_pair_record(
-            call_id
-        )
-
-        self.assertTrue(actual)
-
-    def test_existent_start_type_false(self):
-        validator_instance = BillValidator()
-
-        call_id = CallRecord.objects.get(id=3).call_id
-
-        actual = validator_instance._BillValidator__existent_pair_record(
-            call_id
-        )
-
-        self.assertFalse(actual)
-
     def test_validate_bill_to_record_true(self):
         validator_instance = BillValidator()
         call_record_serializer = CallRecordSerializer(
