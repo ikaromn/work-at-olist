@@ -77,18 +77,16 @@ WSGI_APPLICATION = 'bill.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
-DATABASE_URL = {
+DATABASES = {
     'default':{
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.environ.get('NAME', 'postgres'),
         'USER': os.environ.get('USER', 'postgres'),
         'PASSWORD': os.environ.get('PASSWORD', 'root'),
-        'HOST': os.environ.get('HOST', ''),
+        'HOST': os.environ.get('HOST', 'localhost'),
         'PORT': os.environ.get('PORT', ''),
     }
 }
-
-DATABASES = os.environ.get('DATABASE_URL', DATABASE_URL)
 
 # Password validation
 # https://docs.djangoproject.com/en/2.0/ref/settings/#auth-password-validators
