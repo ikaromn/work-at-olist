@@ -15,7 +15,7 @@ urlpatterns = [
         name='price_rule_list_create'),
     url(r'price-rule/(?P<pk>[0-9]+)/$', views.PriceRuleUpdate.as_view(),
         name='price_rule_update'),
-    url(r'^docs/$', schemas.schema_view,
+    url(r'^docs/$', schemas.SwaggerSchemaView.as_view(),
         name="docs"),
     path('admin/', admin.site.urls),
 ]

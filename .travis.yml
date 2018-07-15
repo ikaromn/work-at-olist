@@ -18,7 +18,7 @@ script:
 - coverage run manage.py test
 
 after_success:
-- codecov
+- codecov --gcov-glob callcenter/schemas.py
 
 deploy:
   - provider: releases

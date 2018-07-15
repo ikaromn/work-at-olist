@@ -1,22 +1,27 @@
 import coreapi
 from rest_framework import schemas
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.views import APIView
 from rest_framework.decorators import permission_classes
 from rest_framework.decorators import renderer_classes
 from rest_framework.permissions import AllowAny
+from rest_framework.schemas import SchemaGenerator
 from rest_framework_swagger.renderers import OpenAPIRenderer
 from rest_framework_swagger.renderers import SwaggerUIRenderer
 
 
-@api_view()
-@permission_classes((AllowAny, ))
-@renderer_classes([OpenAPIRenderer, SwaggerUIRenderer])
-def schema_view(request):
+class SwaggerSchemaView(APIView):
+    permission_classes = [AllowAny]
+    renderer_classes = [
+        OpenAPIRenderer,
+        SwaggerUIRenderer
+    ]
 
-    generator = schemas.SchemaGenerator(title='Bill API')
+    def get(self, request):
+        generator = SchemaGenerator()
+        schema = generator.get_schema(request=request)
 
-    return Response(generator.get_schema())
+        return Response(schema)
 
 
 def bill_by_month_schema():
