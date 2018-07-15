@@ -1,27 +1,16 @@
 import logging
-import coreapi
 from decimal import Decimal
-from rest_framework import generics, views, schemas
+from rest_framework import views
+from rest_framework import generics
 from rest_framework.response import Response
-from .models import CallRecord, Bill, PriceRule
-from .serializers import\
-    CallRecordSerializer, BillSerializer, PriceRuleSerializer
+from .models import Bill
+from .models import PriceRule
+from .models import CallRecord
+from .schemas import bill_by_month_schema
 from .validators import BillDateValidator
-from rest_framework.decorators import\
-    api_view, permission_classes, renderer_classes
-from rest_framework.permissions import AllowAny
-from rest_framework_swagger.renderers import OpenAPIRenderer, SwaggerUIRenderer
-
-
-@api_view()
-@permission_classes((AllowAny, ))
-@renderer_classes([OpenAPIRenderer, SwaggerUIRenderer])
-def schema_view(request):
-
-    generator = schemas.SchemaGenerator(title='Bill API')
-
-    return Response(generator.get_schema())
-
+from .serializers import CallRecordSerializer
+from .serializers import BillSerializer
+from .serializers import PriceRuleSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -34,28 +23,7 @@ class CallRecordCreate(generics.CreateAPIView):
 class BillByMonth(views.APIView):
     data_to_serialize = ''
     date_validator = BillDateValidator()
-    schema = schemas.AutoSchema(manual_fields=[
-            coreapi.Field(
-                "phone_number",
-                required=True,
-                location="path",
-                description="The phone number to get the bill"
-            ),
-            coreapi.Field(
-                "month",
-                required=False,
-                location="query",
-                description="The month of the bill",
-                type="int"
-            ),
-            coreapi.Field(
-                "year",
-                required=False,
-                location="query",
-                description="The year of the bill",
-                type="int"
-            ),
-        ])
+    schema = bill_by_month_schema()
 
     def get(self, request, **kwargs):
         """

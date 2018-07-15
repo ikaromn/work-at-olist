@@ -2,6 +2,7 @@ from django.conf.urls import include, url
 from django.urls import path
 from django.contrib import admin
 from callcenter import views
+from callcenter import schemas
 admin.autodiscover()
 
 
@@ -14,7 +15,7 @@ urlpatterns = [
         name='price_rule_list_create'),
     url(r'price-rule/(?P<pk>[0-9]+)/$', views.PriceRuleUpdate.as_view(),
         name='price_rule_update'),
-    url(r'^docs/$', views.schema_view,
+    url(r'^docs/$', schemas.schema_view,
         name="docs"),
     path('admin/', admin.site.urls),
 ]
