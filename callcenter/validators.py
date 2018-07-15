@@ -1,9 +1,10 @@
+from dateutil import relativedelta
 from datetime import datetime
-from .models import CallRecord, PriceRule
-from .exceptions import InvalidBillDate
-import dateutil.relativedelta
 from dateutil.rrule import DAILY, rrule
 from django.utils import timezone
+from .models import CallRecord
+from .models import PriceRule
+from .exceptions import InvalidBillDate
 
 START_TYPE = 1
 END_TYPE = 2
@@ -59,13 +60,10 @@ class BillValidator:
         start_call_datetime = call_record_intance.timestamp
 
         end_call_datetime = call_record_data['timestamp']
-        call_duration = end_call_datetime - start_call_datetime
         cost = PriceGenerator().generate_cost(call_id)
-
         return {
             'call': call_record_intance,
             'cost': cost,
-            'call_duration': call_duration,
             'call_start': start_call_datetime,
             'call_end': end_call_datetime,
             'month': int(end_call_datetime.month),
@@ -130,7 +128,7 @@ class BillDateValidator:
     def _get_previous_month(self):
         """Get previous month
         """
-        last_month = self.actual_date - dateutil.relativedelta.relativedelta(
+        last_month = self.actual_date - relativedelta.relativedelta(
             months=1
         )
 

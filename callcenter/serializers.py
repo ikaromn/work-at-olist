@@ -1,3 +1,4 @@
+from datetime import datetime
 from rest_framework import serializers
 from .models import CallRecord, Bill, PriceRule
 from .validators import BillValidator
@@ -27,13 +28,27 @@ class CallRecordSerializer(serializers.ModelSerializer):
 
 class BillSerializer(serializers.ModelSerializer):
     destination = serializers.SerializerMethodField('get_call_record')
+    duration = serializers.SerializerMethodField()
 
     class Meta:
-        exclude = ('month', 'year', 'call_record')
+        exclude = ('month', 'year', 'call_record', 'id')
         model = Bill
 
     def get_call_record(self, object):
         return object.call_record.destination
+
+    def get_duration(self, object):
+        time_diff = object.fk_call_end - object.fk_call_start
+
+        return self._convert_time(time_diff)
+
+    def _convert_time(self, time):
+        days, seconds = time.days, time.seconds
+        hours = days * 24 + seconds // 3600
+        minutes = (seconds % 3600) // 60
+        seconds = (seconds % 60)
+
+        return "%02dh%02dm%02ds" % (hours, minutes, seconds)
 
 
 class PriceRuleSerializer(serializers.ModelSerializer):

@@ -34,7 +34,7 @@ class BillTest(TestCase):
         )
 
         self.call_record_end_one = mommy.make(
-            CallRecord, pk=2, type=2, timestamp='2018-11-1 00:01:08',
+            CallRecord, pk=2, type=2, timestamp='2018-11-2 00:01:08',
             call_id=1, source='', destination=''
         )
 
@@ -43,9 +43,9 @@ class BillTest(TestCase):
         bill_data_to_save = {
             'call': CallRecord.objects.get(id=2),
             'cost': 12.76,
-            'call_duration': timedelta(hours=0, minutes=6, seconds=8),
+            'call_duration': timedelta(hours=24, minutes=6, seconds=8),
             'call_start': datetime(2018, 10, 31, 23, 55, 00),
-            'call_end': datetime(2018, 11, 1, 00, 1, 8),
+            'call_end': datetime(2018, 11, 2, 00, 1, 8),
             'month': 11,
             'year': 2018
         }
@@ -144,7 +144,7 @@ class CallRecordSerializerTest(TestCase):
 class BillSerializerTest(TestCase):
     def setUp(self):
         self.call_record_end_one = mommy.make(
-            CallRecord, pk=1, type=2, timestamp='2018-11-25 09:08:08',
+            CallRecord, pk=1, type=2, timestamp='2018-11-27 09:08:08',
             call_id=1, source='', destination=''
         )
 
@@ -156,9 +156,8 @@ class BillSerializerTest(TestCase):
         self.bill_attributes = {
             'call_record': CallRecord.objects.get(id=2),
             'call_cost': 12.76,
-            'call_duration': str(timedelta(hours=1)),
-            'fk_call_end': str(datetime(2018, 11, 25, 9, 8, 8)),
-            'fk_call_start': str(datetime(2018, 11, 25, 8, 8, 8)),
+            'fk_call_end': datetime(2018, 11, 27, 9, 8, 8),
+            'fk_call_start': datetime(2018, 11, 25, 8, 8, 8),
             'month': 11,
             'year': 2018
         }
@@ -166,8 +165,7 @@ class BillSerializerTest(TestCase):
         self.serializer_data = {
             'call_record': CallRecord.objects.get(id=2),
             'cost': 12.76,
-            'call_duration': "01:00:00",
-            'call_end': "2018-11-25T09:08:08Z",
+            'call_end': "2018-11-27T09:08:08Z",
             'call_start': "2018-11-25T08:08:08Z",
             'month': 11,
             'year': 2018
@@ -182,7 +180,7 @@ class BillSerializerTest(TestCase):
         self.assertEqual(
             set(data.keys()),
             set([
-                'destination', 'id', 'call_duration',
+                'destination', 'duration',
                 'call_cost', 'fk_call_start', 'fk_call_end'
                 ])
         )
@@ -270,7 +268,6 @@ class BillValidatorTest(TestCase):
         expected = {
             'call': CallRecord.objects.get(id=2),
             'cost': Decimal('5.76'),
-            'call_duration': timedelta(hours=1),
             'call_end': datetime(2018, 11, 25, 9, 8, 8),
             'call_start': datetime(2018, 11, 25, 8, 8, 8),
             'month': 11,
@@ -366,7 +363,7 @@ class BillByMonthTest(TestCase):
         )
         self._third_instance = mommy.make(
             Bill, call_record=CallRecord.objects.get(id=2), call_cost=12.76,
-            call_duration='01:00:00', fk_call_end='2019-4-25 22:10:56',
+            fk_call_end='2019-4-25 22:10:56',
             fk_call_start='2019-4-25 21:57:13', month=4, year=2019
         )
 
