@@ -12,7 +12,7 @@ from .serializers import CallRecordSerializer
 from .serializers import BillSerializer
 from .serializers import PriceRuleSerializer
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('call_center')
 
 
 class CallRecordCreate(generics.CreateAPIView):
@@ -37,6 +37,11 @@ class BillByMonth(views.APIView):
             serializer = self.serializer_data()
             full_amount = self._sum_the_amount(serializer.data)
 
+            logger.info(
+                'The bill information was returned to phone number {}'.format(
+                    kwargs['phone_number']
+                )
+            )
             return Response({
                 'month': self.date_dict['month'],
                 'year': self.date_dict['year'],
@@ -44,6 +49,7 @@ class BillByMonth(views.APIView):
                 'records': serializer.data,
             })
         except Exception as e:
+            logger.warn("Some error was ocurred: {}".format(str(e)))
             return Response({
                 'error': str(e)
             })

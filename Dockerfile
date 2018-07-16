@@ -7,3 +7,4 @@ ADD Pipfile.lock /code/
 RUN pip install -U pipenv
 RUN pipenv install --system
 ADD . /code/
+RUN mkdir /tmp/logs/

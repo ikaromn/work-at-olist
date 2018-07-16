@@ -12,6 +12,7 @@ mock = "*"
 django-rest-swagger = "*"
 python-dateutil = "*"
 "psycopg2-binary" = "*"
+json-log-formatter = "*"
 
 [requires]
 python_version = "3.6"
