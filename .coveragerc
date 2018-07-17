@@ -1,0 +1,8 @@
+[run]
+branch = True
+source = callcenter
+
+[report]
+omit =
+    callcenter/tests.py
+    callcenter/schemas.py
