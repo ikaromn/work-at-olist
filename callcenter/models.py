@@ -1,4 +1,7 @@
+import logging
 from django.db import models
+
+logger = logging.getLogger('call_center')
 
 
 class CallRecord(models.Model):
@@ -39,7 +42,16 @@ class Bill(models.Model):
         self.month = kwargs['bill_data']['month']
         self.year = kwargs['bill_data']['year']
 
-        self.save()
+        try:
+            self.save()
+            logger.info('A new bill registry was saved: ID {}'.format(self.pk))
+        except Exception as e:
+            logger.warn(
+                'Something wrong happened when '
+                'saved a bill record: {}'.format(str(e))
+            )
+
+            return str(e)
 
     class Meta:
         verbose_name = 'Bill'
