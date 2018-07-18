@@ -52,7 +52,7 @@ class BillByMonth(views.APIView):
             logger.warn("Some error was ocurred: {}".format(str(e)))
             return Response({
                 'error': str(e)
-            })
+            }, status=422)
 
     def _get_bill_by_month(self, **kwargs):
         self.date_dict = self.date_validator.validate_bill_date(

@@ -27,7 +27,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = os.environ.get('SECRET_KEY', 'cg#p$g+j9tax!#a3cup@1$8obt2_+&k3q+pmu)5%asj6yjpkag')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', False)
 
 ALLOWED_HOSTS = ['0.0.0.0']
 
@@ -140,7 +140,7 @@ LOGGING = {
             'class': 'logging.FileHandler',
             'filename': os.environ.get(
                 'LOG_PATH_FILE',
-                os.path.join(BASE_DIR, 'logs/call_center.log')
+                os.path.join(BASE_DIR, 'local_logs/call_center.log')
             ),
             'formatter': 'verbose'
         },

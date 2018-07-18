@@ -12,7 +12,7 @@ END_TYPE = 2
 
 class BillValidator:
     def validate_bill_to_record(self, **kwargs):
-        """Validate if call have the start type to generate the bill
+        """Validate if call have the pair (start & end) to generate the bill
 
         :param kwargs:
           :type call_data: dict
@@ -23,22 +23,9 @@ class BillValidator:
                   otherwise, False
         """
         call_data = kwargs['call_data']
-        if call_data['type'] == 2:
-            return self._existent_pair_record(call_data['call_id'])
 
-        return False
-
-    def _existent_pair_record(self, call_id):
-        """Verify if have a pair of call_id
-
-        :type call_id: int
-        :param call_id: int to filter how much call_id have in models
-
-        :rtype: bool
-        :returns: True if more than 1 call id, otherwise False
-        """
         if CallRecord.objects.filter(
-            call_id=call_id
+            call_id=call_data['call_id']
         ).count() > 1:
 
             return True

@@ -28,14 +28,25 @@ class CallRecordSerializer(serializers.ModelSerializer):
 
 class BillSerializer(serializers.ModelSerializer):
     destination = serializers.SerializerMethodField('get_call_record')
+    start = serializers.SerializerMethodField('get_fk_call_start')
+    end = serializers.SerializerMethodField('get_fk_call_end')
     duration = serializers.SerializerMethodField()
 
     class Meta:
-        exclude = ('month', 'year', 'call_record', 'id')
+        exclude = (
+            'month', 'year', 'call_record',
+            'id', 'fk_call_start', 'fk_call_end'
+        )
         model = Bill
 
     def get_call_record(self, object):
         return object.call_record.destination
+
+    def get_fk_call_start(self, object):
+        return object.fk_call_start
+
+    def get_fk_call_end(self, object):
+        return object.fk_call_end
 
     def get_duration(self, object):
         time_diff = object.fk_call_end - object.fk_call_start

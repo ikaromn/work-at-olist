@@ -4,5 +4,5 @@ source = callcenter
 
 [report]
 omit =
-    callcenter/tests.py
+    callcenter/tests/*
     callcenter/schemas.py
