@@ -10,20 +10,6 @@ from rest_framework_swagger.renderers import OpenAPIRenderer
 from rest_framework_swagger.renderers import SwaggerUIRenderer
 
 
-class SwaggerSchemaView(APIView):
-    permission_classes = [AllowAny]
-    renderer_classes = [
-        OpenAPIRenderer,
-        SwaggerUIRenderer
-    ]
-
-    def get(self, request):
-        generator = SchemaGenerator()
-        schema = generator.get_schema(request=request)
-
-        return Response(schema)
-
-
 def bill_by_month_schema():
     return schemas.AutoSchema(
         manual_fields=[
