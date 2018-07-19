@@ -59,6 +59,22 @@ class CallRecordSerializerTest(TestCase):
         self.assertIsInstance(self.serializer_one, CallRecord)
         self.assertIsInstance(self.serializer_two, CallRecord)
 
+    def test_serializer_create_exception(self):
+        self.call_record_attributes_start = {
+            'type': 1,
+            'call_id': None,
+            'source': '11986091154',
+            'destination': '11982223465',
+            'timestamp': datetime(2018, 7, 22, 6, 0, 56)
+        }
+
+        call_record_serializer_instance_one = CallRecordSerializer()
+
+        with self.assertRaises(Exception):
+            call_record_serializer_instance_one.create(
+                validated_data=self.call_record_attributes_start
+            )
+
 
 class BillSerializerTest(TestCase):
     def setUp(self):

@@ -48,6 +48,27 @@ class BillTest(TestCase):
 
         bill_instance.create(bill_data=bill_data_to_save)
 
+    def test_call_record_creation_exception(self):
+        bill_instance = Bill()
+        bill_data_to_save = {
+            'call': CallRecord.objects.get(id=2),
+            'cost': 12.76,
+            'call_duration': timedelta(hours=24, minutes=6, seconds=8),
+            'call_start': datetime(2018, 10, 31, 23, 55, 00),
+            'call_end': timedelta(hours=10),
+            'month': 11,
+            'year': 2018
+        }
+
+        expected = (
+            '["\'10:00:00\' value has an invalid format. It must '
+            'be in YYYY-MM-DD HH:MM[:ss[.uuuuuu]][TZ] format."]'
+        )
+
+        actual = bill_instance.create(bill_data=bill_data_to_save)
+
+        self.assertEqual(actual, expected)
+
 
 class PriceRuleTest(TestCase):
     def setUp(self):
