@@ -1,4 +1,5 @@
 import logging
+import json
 from django.db import models
 
 logger = logging.getLogger('call_center')
@@ -41,6 +42,23 @@ class Bill(models.Model):
         self.fk_call_end = str(kwargs['bill_data']['call_end'])
         self.month = kwargs['bill_data']['month']
         self.year = kwargs['bill_data']['year']
+
+        logger.debug(
+            'New bill registry should be saved '
+            'with informations: source: {}, '
+            'cost: {}, '
+            'call start: {}, '
+            'call end: {}, '
+            'month: {}, '
+            'year: {}'.format(
+                str(self.call_record),
+                self.call_cost,
+                self.fk_call_start,
+                self.fk_call_end,
+                self.month,
+                self.year
+            )
+        )
 
         try:
             self.save()

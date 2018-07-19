@@ -60,6 +60,14 @@ class BillByMonth(views.APIView):
             self.request.query_params.get('year', None)
         )
 
+        logger.debug(
+            'Get the bill with month {} and'
+            ' year {} to phone number {}'.format(
+                self.date_dict['month'],
+                self.date_dict['year'],
+                kwargs['source']
+            )
+        )
         return Bill.objects.filter(
             call_record__source=kwargs['source'],
             month=self.date_dict['month'],

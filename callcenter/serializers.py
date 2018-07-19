@@ -23,7 +23,7 @@ class CallRecordSerializer(serializers.ModelSerializer):
         except Exception as e:
             logger.warn(
                 'Something wrong hapenned when try to '
-                'save an call record registry: {}'.format(str(e))
+                'save a call record registry: {}'.format(str(e))
             )
 
             raise e
