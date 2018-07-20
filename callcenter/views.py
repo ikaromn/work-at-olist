@@ -7,6 +7,8 @@ from .models import Bill
 from .models import PriceRule
 from .models import CallRecord
 from .schemas import bill_by_month_schema
+from .schemas import call_record_create_schema
+from .schemas import CustomViewPriceRuleCreateSchema
 from .validators import BillDateValidator
 from .serializers import CallRecordSerializer
 from .serializers import BillSerializer
@@ -18,6 +20,7 @@ logger = logging.getLogger('call_center')
 class CallRecordCreate(generics.CreateAPIView):
     queryset = CallRecord.objects.all()
     serializer_class = CallRecordSerializer
+    schema = call_record_create_schema()
 
 
 class BillByMonth(views.APIView):
@@ -92,6 +95,7 @@ class BillByMonth(views.APIView):
 class PriceRuleListCreate(generics.ListCreateAPIView):
     queryset = PriceRule.objects.all()
     serializer_class = PriceRuleSerializer
+    schema = CustomViewPriceRuleCreateSchema()
 
 
 class PriceRuleUpdate(generics.UpdateAPIView):

@@ -26,9 +26,9 @@ class CallRecordApiPostTest(TestCase):
             'start_period': '22:00:00',
             'end_period': '06:00:00'
         }
-        self.client.post('/price-rule/', format='json', data=price_rule_stand)
+        self.client.post('/price-rules/', format='json', data=price_rule_stand)
         self.client.post(
-            '/price-rule/', format='json', data=price_rule_reduced
+            '/price-rules/', format='json', data=price_rule_reduced
         )
 
     def test_post_call_record_start(self):
@@ -41,7 +41,7 @@ class CallRecordApiPostTest(TestCase):
         }
 
         response = self.client.post(
-            '/call-record/', format='json', data=call_record_start
+            '/call-records/', format='json', data=call_record_start
         )
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -64,9 +64,9 @@ class BillByMonthGetTest(TestCase):
             'start_period': '22:00:00',
             'end_period': '06:00:00'
         }
-        self.client.post('/price-rule/', format='json', data=price_rule_stand)
+        self.client.post('/price-rules/', format='json', data=price_rule_stand)
         self.client.post(
-            '/price-rule/', format='json', data=price_rule_reduced
+            '/price-rules/', format='json', data=price_rule_reduced
         )
 
         call_record_start = {
@@ -84,14 +84,14 @@ class BillByMonthGetTest(TestCase):
         }
 
         self.client.post(
-            '/call-record/', format='json', data=call_record_start
+            '/call-records/', format='json', data=call_record_start
         )
         self.client.post(
-            '/call-record/', format='json', data=call_record_end
+            '/call-records/', format='json', data=call_record_end
         )
 
     def test_get_bill_by_month(self):
-        response = self.client.get('/bill/11986091154/?month=6&year=2018')
+        response = self.client.get('/bills/11986091154/?month=6&year=2018')
 
         expected = {
             'month': 6,
@@ -119,7 +119,7 @@ class BillByMonthGetTest(TestCase):
         year = today.year
 
         response = self.client.get(
-            '/bill/11986091154/?month={}&year={}'.format(
+            '/bills/11986091154/?month={}&year={}'.format(
                 month, year
             )
         )
