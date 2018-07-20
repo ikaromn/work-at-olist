@@ -25,9 +25,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = os.environ.get('SECRET_KEY', 'cg#p$g+j9tax!#a3cup@1$8obt2_+&k3q+pmu)5%asj6yjpkag')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', False)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['0.0.0.0']
 
 
 # Application definition
@@ -125,20 +125,37 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '[%(levelname)s] [%(asctime)s] [%(module)s]: %(message)s'
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+        'json': {
+            '()': 'bill.customized_loggers.CustomisedJSONFormatter'
+        }
+    },
     'handlers': {
         'file': {
-            'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'logs/debug.log')
+            'filename': os.environ.get(
+                'LOG_PATH_FILE',
+                os.path.join(BASE_DIR, 'local_logs/call_center.log')
+            ),
+            'formatter': 'json'
+        },
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'json'
         },
     },
     'loggers': {
-        'django': {
-            'handlers': ['file'],
-            'level': 'DEBUG',
-            'propagate': True,
+        'call_center': {
+            'handlers': ['file', 'console'],
+            'level': os.environ.get('LOG_LEVEL', 'WARNING')
         },
     },
 }
 
-django_heroku.settings(locals())
+django_heroku.settings(locals(), logging=False)

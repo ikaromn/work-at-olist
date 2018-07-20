@@ -1,61 +1,32 @@
 import logging
-import coreapi
 from decimal import Decimal
-from rest_framework import generics, views, schemas
+from rest_framework import views
+from rest_framework import generics
 from rest_framework.response import Response
-from .models import CallRecord, Bill, PriceRule
-from .serializers import\
-    CallRecordSerializer, BillSerializer, PriceRuleSerializer
+from .models import Bill
+from .models import PriceRule
+from .models import CallRecord
+from .schemas import bill_by_month_schema
+from .schemas import call_record_create_schema
+from .schemas import CustomViewPriceRuleCreateSchema
 from .validators import BillDateValidator
-from rest_framework.decorators import\
-    api_view, permission_classes, renderer_classes
-from rest_framework.permissions import AllowAny
-from rest_framework_swagger.renderers import OpenAPIRenderer, SwaggerUIRenderer
+from .serializers import CallRecordSerializer
+from .serializers import BillSerializer
+from .serializers import PriceRuleSerializer
 
-
-@api_view()
-@permission_classes((AllowAny, ))
-@renderer_classes([OpenAPIRenderer, SwaggerUIRenderer])
-def schema_view(request):
-
-    generator = schemas.SchemaGenerator(title='Bill API')
-
-    return Response(generator.get_schema())
-
-
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('call_center')
 
 
 class CallRecordCreate(generics.CreateAPIView):
     queryset = CallRecord.objects.all()
     serializer_class = CallRecordSerializer
+    schema = call_record_create_schema()
 
 
 class BillByMonth(views.APIView):
     data_to_serialize = ''
     date_validator = BillDateValidator()
-    schema = schemas.AutoSchema(manual_fields=[
-            coreapi.Field(
-                "phone_number",
-                required=True,
-                location="path",
-                description="The phone number to get the bill"
-            ),
-            coreapi.Field(
-                "month",
-                required=False,
-                location="query",
-                description="The month of the bill",
-                type="int"
-            ),
-            coreapi.Field(
-                "year",
-                required=False,
-                location="query",
-                description="The year of the bill",
-                type="int"
-            ),
-        ])
+    schema = bill_by_month_schema()
 
     def get(self, request, **kwargs):
         """
@@ -63,12 +34,18 @@ class BillByMonth(views.APIView):
         or the month and year gived
         """
         try:
-            self.data_to_serialize = self.__get_bill_by_month(
+            self.data_to_serialize = self._get_bill_by_month(
                 source=kwargs['phone_number'])
 
             serializer = self.serializer_data()
-            full_amount = self.__sum_the_amount(serializer.data)
+            full_amount = self._sum_the_amount(serializer.data)
 
+            logger.info(
+                'Bill Information', extra={
+                    'event': 'GetBillByMonth',
+                    'phone_number': kwargs['phone_number']
+                }
+            )
             return Response({
                 'month': self.date_dict['month'],
                 'year': self.date_dict['year'],
@@ -76,16 +53,28 @@ class BillByMonth(views.APIView):
                 'records': serializer.data,
             })
         except Exception as e:
-            return Response({
+            logger.warn("Bill Information Error", extra={
+                'event': 'GetBillByMonthError',
                 'error': str(e)
             })
+            return Response({
+                'error': str(e)
+            }, status=422)
 
-    def __get_bill_by_month(self, **kwargs):
+    def _get_bill_by_month(self, **kwargs):
         self.date_dict = self.date_validator.validate_bill_date(
             self.request.query_params.get('month', None),
             self.request.query_params.get('year', None)
         )
 
+        logger.debug(
+            'Get bill registry with date', extra={
+                'event': 'GetBillByMonth',
+                'month': self.date_dict['month'],
+                'year': self.date_dict['year'],
+                'phone_number': kwargs['source']
+            }
+        )
         return Bill.objects.filter(
             call_record__source=kwargs['source'],
             month=self.date_dict['month'],
@@ -94,7 +83,7 @@ class BillByMonth(views.APIView):
     def serializer_data(self):
         return BillSerializer(self.data_to_serialize, many=True)
 
-    def __sum_the_amount(self, cost):
+    def _sum_the_amount(self, cost):
         amount = Decimal('0.0')
 
         for i in cost:
@@ -106,6 +95,7 @@ class BillByMonth(views.APIView):
 class PriceRuleListCreate(generics.ListCreateAPIView):
     queryset = PriceRule.objects.all()
     serializer_class = PriceRuleSerializer
+    schema = CustomViewPriceRuleCreateSchema()
 
 
 class PriceRuleUpdate(generics.UpdateAPIView):

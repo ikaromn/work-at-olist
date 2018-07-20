@@ -1,9 +1,10 @@
+from dateutil import relativedelta
 from datetime import datetime
-from .models import CallRecord, PriceRule
-from .exceptions import InvalidBillDate
-import dateutil.relativedelta
 from dateutil.rrule import DAILY, rrule
 from django.utils import timezone
+from .models import CallRecord
+from .models import PriceRule
+from .exceptions import InvalidBillDate
 
 START_TYPE = 1
 END_TYPE = 2
@@ -11,15 +12,20 @@ END_TYPE = 2
 
 class BillValidator:
     def validate_bill_to_record(self, **kwargs):
+        """Validate if call have the pair (start & end) to generate the bill
+
+        :param kwargs:
+          :type call_data: dict
+          :param call_data: dictionary with call record
+
+        :rtype: bool
+        :returns: True if match pair between Start and End type from call,
+                  otherwise, False
+        """
         call_data = kwargs['call_data']
-        if call_data['type'] == 2:
-            return self.__existent_pair_record(call_data['call_id'])
 
-        return False
-
-    def __existent_pair_record(self, call_id):
         if CallRecord.objects.filter(
-            call_id=call_id
+            call_id=call_data['call_id']
         ).count() > 1:
 
             return True
@@ -27,6 +33,13 @@ class BillValidator:
         return False
 
     def prepare_bill_data(self, call_record_data):
+        """Prepare the bill data to save in bill models
+
+        :type call_record_data: dict
+        :param call_record_data: dictionary with call record data
+
+        :returns: dictonary with a valid bill to save in models
+        """
         call_id = call_record_data['call_id']
         call_record_intance = CallRecord.objects.get(
             call_id=call_id, type=START_TYPE
@@ -34,13 +47,10 @@ class BillValidator:
         start_call_datetime = call_record_intance.timestamp
 
         end_call_datetime = call_record_data['timestamp']
-        call_duration = end_call_datetime - start_call_datetime
         cost = PriceGenerator().generate_cost(call_id)
-
         return {
             'call': call_record_intance,
             'cost': cost,
-            'call_duration': call_duration,
             'call_start': start_call_datetime,
             'call_end': end_call_datetime,
             'month': int(end_call_datetime.month),
@@ -55,34 +65,57 @@ class BillDateValidator:
     actual_date = datetime.now().date()
 
     def validate_bill_date(self, month=None, year=None):
+        """Validade if the bill date is valid or get previous date if are null
+
+        :type month: int
+        :param month: (Optional) int with wanted month
+
+        :type year: int
+        :param year: (Optional) int with wanted year
+
+        :returns: dictonary with valid year and moth, otherwise raise a invalid
+                  bill date exception
+        """
         if month and year:
-            self.__make_validation(int(month), int(year))
+            self._make_validation(int(month), int(year))
         else:
-            self.__get_previous_month()
+            self._get_previous_month()
 
         return {
             'month': self.month,
             'year': self.year
         }
 
-    def __make_validation(self, month, year):
-        if (year > 9999 or month > 12)\
-                or (year < 0 or month < 1):
+    def _make_validation(self, month, year):
+        """Make all validations to see if are corrects params
+
+        :type month: int
+        :param month: int to validate if a valid month
+
+        :type year: int
+        :param year: int to validate if a valid year
+
+        :raises: :class: `IvalidBillDate <exceptions.InvalidBillDate>`
+        """
+        if ((year > 9999 or month > 12)
+                or (year < 0 or month < 1)):
             raise InvalidBillDate("Insert a valid date")
 
         if year > self.actual_date.year:
             raise InvalidBillDate("Year requested is bigger than actual")
 
-        if (year == self.actual_date.year and month == self.actual_date.month)\
+        if ((year == self.actual_date.year and month == self.actual_date.month)
                 or (year == self.actual_date.year
-                    and self.actual_date.month == 1):
+                    and self.actual_date.month == 1)):
             raise InvalidBillDate("The bill to this month isn't closed yet")
 
         self.month = month
         self.year = year
 
-    def __get_previous_month(self):
-        last_month = self.actual_date - dateutil.relativedelta.relativedelta(
+    def _get_previous_month(self):
+        """Get previous month
+        """
+        last_month = self.actual_date - relativedelta.relativedelta(
             months=1
         )
 
@@ -97,6 +130,14 @@ class PriceGenerator:
     call_end = datetime.now()
 
     def generate_cost(self, call_id):
+        """Generate the cost from a call by your period
+
+        :type call_id: int
+        :param call_id: int to get call from `CallRecord` models
+
+        :rtype: Decimal
+        :returns: Decimal from a cost of call
+        """
         self.call_start = CallRecord.objects.get(
             call_id=call_id, type=START_TYPE
         ).timestamp
@@ -105,54 +146,78 @@ class PriceGenerator:
             call_id=call_id, type=END_TYPE
         ).timestamp
 
-        cost = self.__generate_call_cost()
+        cost = self._generate_call_cost()
 
         return cost
 
-    def __generate_call_cost(self):
+    def _generate_call_cost(self):
+        """Generate the cost of call based on price rules
+
+        :rtype: Decimal
+        :returns: Decimal from a call cost based on Price Cost Rules
+        """
         price_rules = PriceRule.objects.all()
 
         for price_rule in price_rules:
-            start_in_range = self.__start_in_charge_period(
+            start_in_range = self._start_in_charge_period(
                 price_rule.start_period,
                 price_rule.end_period,
                 self.call_start.time()
             )
 
             if start_in_range:
-                self.__set_fixed_charge(price_rule.fixed_charge)
+                self._set_fixed_charge(price_rule.fixed_charge)
 
-            self.__calculate_price_by_period(price_rule)
+            self._calculate_price_by_period(price_rule)
 
         full_cost = self.call_price + self.fixed_charge
 
         return full_cost
 
-    def __start_in_charge_period(self, start_period, end_period, call_start):
+    def _start_in_charge_period(self, start_period, end_period, call_start):
+        """Verify if the call start is on a period
+
+        :type start_period: :class:`datetime.time`
+        :param start_period: The start of rule period
+
+        :type end_period: :class:`datetime.time`
+        :param end_period: The end of rule period
+
+        :type call_start: :class:`datetime.time`
+        :param call_start: The start of call
+
+        :rtype: bool
+        :returns: True if the call start is in the range of start and end
+                  period, otherwise, False.
+        """
         if start_period <= end_period:
             if start_period <= call_start:
                 return call_start <= end_period
 
         return start_period <= call_start or call_start <= end_period
 
-    def __set_fixed_charge(self, fixed_charge):
-        """
-        Set fixed charge if aren't setted
+    def _set_fixed_charge(self, fixed_charge):
+        """Set fixed charge if aren't setted
+
+        :type fixed_charge: Decimal
+        :param fixed_charge: Call fixed charge
         """
         if not self.fixed_charge:
             self.fixed_charge = fixed_charge
 
-    def __calculate_price_by_period(self, price_rule):
-        """
-        Calculate the cost in de current period case call started
+    def _calculate_price_by_period(self, price_rule):
+        """Calculate the cost in de current period case call started
         in this period rule
+
+        :type price_rule: :class:`PriceRule`
+        :param price_rule: Will be used to calculate the cost
         """
-        for day_occurance in self.__list_days_in_call_period(
+        for day_occurance in self._list_days_in_call_period(
                 self.call_start, self.call_end):
-            charge_start_period = self.__replace_time_in_day_occurence(
+            charge_start_period = self._replace_time_in_day_occurence(
                 day_occurance, price_rule.start_period
             )
-            charge_end_period = self.__replace_time_in_day_occurence(
+            charge_end_period = self._replace_time_in_day_occurence(
                 day_occurance, price_rule.end_period
             )
 
@@ -173,17 +238,34 @@ class PriceGenerator:
 
                 self.call_price += price_rule.call_charge * minutes_period
 
-    def __list_days_in_call_period(self, start, end):
-        """
-        Return a list of days that was occurred in start and end period
+    def _list_days_in_call_period(self, start, end):
+        """Get the days that was occurred between call period
+
+        :type start: :class:`datetime.time`
+        :param start: start period from call
+
+        :type end: :class:`datetime.time`
+        :param end: end period from call
+
+        :rtype: list
+        :returns: list of days that occurred between start & end of call
         """
         return list(rrule(DAILY, dtstart=start, until=end))
 
-    def __replace_time_in_day_occurence(self, day_occurence, rule_period):
+    def _replace_time_in_day_occurence(self, day_occurrence, rule_period):
+        """Set the time of rule in a day occurence
+
+        :type day_occurrence: :class:`datetime`
+        :param day_occurrence: A :class: `datetime` to apply the time
+
+        :type rule_period: :class:`datetime.time`
+        :param rule_period: A :class:`datetime.time` to replace into
+                            day_ocurrence
+
+        :rtype: :class:`datetime`
+        :returns: day_ocurrence with your time replaced by the rule_period
         """
-        Set the time of rule in a day occurence
-        """
-        return day_occurence.replace(
+        return day_occurrence.replace(
             hour=rule_period.hour,
             minute=rule_period.minute,
             second=rule_period.second,

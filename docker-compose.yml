@@ -7,12 +7,16 @@ services:
     build: .
     volumes:
       - .:/code
+      - ./logs/:/tmp/logs/
     environment:
       - HOST=db
       - NAME=postgres
       - USER=postgres
       - PASSWORD=root
       - PORT=5432
+      - LOG_PATH_FILE=/tmp/logs/call_center.log
+      - DEBUG=True
+      - LOG_LEVEL=DEBUG
     ports:
       - "8000:8000"
     depends_on:
