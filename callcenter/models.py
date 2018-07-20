@@ -44,30 +44,27 @@ class Bill(models.Model):
         self.year = kwargs['bill_data']['year']
 
         logger.debug(
-            'New bill registry should be saved '
-            'with informations: source: {}, '
-            'cost: {}, '
-            'call start: {}, '
-            'call end: {}, '
-            'month: {}, '
-            'year: {}'.format(
-                str(self.call_record),
-                self.call_cost,
-                self.fk_call_start,
-                self.fk_call_end,
-                self.month,
-                self.year
-            )
-        )
+            'Bill Registry to be saved', extra={
+                'event': 'BillCreateRegistry',
+                'source': str(self.call_record),
+                'cost': float(self.call_cost),
+                'call_start': self.fk_call_start,
+                'call_end': self.fk_call_end,
+                'month': self.month,
+                'year': self.year
+            })
 
         try:
             self.save()
-            logger.info('A new bill registry was saved: ID {}'.format(self.pk))
+            logger.info('Bill Registry', extra={
+                'event': 'BillCreateRegistry',
+                'id': self.pk
+            })
         except Exception as e:
-            logger.warn(
-                'Something wrong happened when '
-                'saved a bill record: {}'.format(str(e))
-            )
+            logger.warn('Bill Registry error', extra={
+                'event': 'BillRegistryCreateError',
+                'error': str(e)
+            })
 
             return str(e)
 

@@ -12,8 +12,6 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 
 import os
 import django_heroku
-import json_log_formatter
-import django.utils.timezone
 
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -133,6 +131,9 @@ LOGGING = {
         },
         'simple': {
             'format': '%(levelname)s %(message)s'
+        },
+        'json': {
+            '()': 'bill.customized_loggers.CustomisedJSONFormatter'
         }
     },
     'handlers': {
@@ -142,17 +143,17 @@ LOGGING = {
                 'LOG_PATH_FILE',
                 os.path.join(BASE_DIR, 'local_logs/call_center.log')
             ),
-            'formatter': 'verbose'
+            'formatter': 'json'
         },
         'console': {
             'class': 'logging.StreamHandler',
-            'formatter': 'simple'
+            'formatter': 'json'
         },
     },
     'loggers': {
         'call_center': {
             'handlers': ['file', 'console'],
-            'level': 'DEBUG'
+            'level': os.environ.get('LOG_LEVEL', 'WARNING')
         },
     },
 }

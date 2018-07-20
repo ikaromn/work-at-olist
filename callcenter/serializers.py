@@ -21,15 +21,17 @@ class CallRecordSerializer(serializers.ModelSerializer):
                 bill_member.create(
                     bill_data=bill_validator.prepare_bill_data(validated_data))
         except Exception as e:
-            logger.warn(
-                'Something wrong hapenned when try to '
-                'save a call record registry: {}'.format(str(e))
-            )
+            logger.warn('Call Record Create Error', extra={
+                'event': 'CallRecordCreateError',
+                'error': str(e)
+            })
 
             raise e
-        logger.info(
-            'A call registry was saved: ID {}'.format(call_record_instance.pk)
-        )
+        logger.info('Call Record Create', extra={
+            'event': 'CallRecordCreate',
+            'row_id': call_record_instance.pk,
+            'call_id': call_record_instance.call_id
+        })
 
         return call_record_instance
 

@@ -38,9 +38,10 @@ class BillByMonth(views.APIView):
             full_amount = self._sum_the_amount(serializer.data)
 
             logger.info(
-                'The bill information was returned to phone number {}'.format(
-                    kwargs['phone_number']
-                )
+                'Bill Information', extra={
+                    'event': 'GetBillByMonth',
+                    'phone_number': kwargs['phone_number']
+                }
             )
             return Response({
                 'month': self.date_dict['month'],
@@ -49,7 +50,10 @@ class BillByMonth(views.APIView):
                 'records': serializer.data,
             })
         except Exception as e:
-            logger.warn("Some error was ocurred: {}".format(str(e)))
+            logger.warn("Bill Information Error", extra={
+                'event': 'GetBillByMonthError',
+                'error': str(e)
+            })
             return Response({
                 'error': str(e)
             }, status=422)
@@ -61,12 +65,12 @@ class BillByMonth(views.APIView):
         )
 
         logger.debug(
-            'Get the bill with month {} and'
-            ' year {} to phone number {}'.format(
-                self.date_dict['month'],
-                self.date_dict['year'],
-                kwargs['source']
-            )
+            'Get bill registry with date', extra={
+                'event': 'GetBillByMonth',
+                'month': self.date_dict['month'],
+                'year': self.date_dict['year'],
+                'phone_number': kwargs['source']
+            }
         )
         return Bill.objects.filter(
             call_record__source=kwargs['source'],
