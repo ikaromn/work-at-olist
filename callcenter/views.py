@@ -3,6 +3,7 @@ from decimal import Decimal
 from rest_framework import views
 from rest_framework import generics
 from rest_framework.response import Response
+from django.http import JsonResponse
 from .models import Bill
 from .models import PriceRule
 from .models import CallRecord
@@ -15,6 +16,16 @@ from .serializers import BillSerializer
 from .serializers import PriceRuleSerializer
 
 logger = logging.getLogger('call_center')
+
+
+def index(request):
+    index_data = {
+        "Welcome page": "This application it's to receive call records "
+                        "and generate bills by your duration",
+        "documentation": "https://ikaromn-work-at-olist.herokuapp.com/docs/"
+    }
+
+    return JsonResponse(index_data)
 
 
 class CallRecordCreate(generics.CreateAPIView):
