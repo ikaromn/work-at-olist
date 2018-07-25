@@ -9,6 +9,13 @@ from callcenter.models import CallRecord, Bill, PriceRule
 from callcenter.serializers import CallRecordSerializer, BillSerializer
 
 
+class IndexTest(TestCase):
+    def test_post_call_record_start(self):
+        response = self.client.get('/')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
 class CallRecordApiPostTest(TestCase):
     def setUp(self):
         price_rule_stand = {
